@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid, Table, Users } from '@lucide/vue';
+import { BookOpen, FolderGit2, LayoutGrid, Kanban as KanbanIcon , Users } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -31,7 +31,7 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Kanban',
         href: kanban(),
-        icon: Table,
+        icon: KanbanIcon ,
     },
 ];
 
