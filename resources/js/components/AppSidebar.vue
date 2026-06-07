@@ -67,10 +67,10 @@ const mainNavItems: NavItem[] = [
             <NavMain :items="mainNavItems" />
         </SidebarContent>
 
-        <!-- <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
+        <SidebarFooter>
+            <!-- <NavFooter :items="footerNavItems" /> -->
             <NavUser />
-        </SidebarFooter> -->
+        </SidebarFooter>
     </Sidebar>
     <slot />
 </template>
