@@ -17,6 +17,7 @@ import {
 import { dashboard, kanban, leads } from '@/routes';
 import type { NavItem } from '@/types';
 
+//Nav items
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
