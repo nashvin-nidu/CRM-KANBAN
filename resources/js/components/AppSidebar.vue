@@ -42,7 +42,8 @@ const mainNavItems: NavItem[] = [
         <SidebarHeader>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton size="lg" as-child>
+
+                    <SidebarMenuButton size="sm" as-child>
                         <Link :href="dashboard()">
                             <AppLogo />
                         </Link>
