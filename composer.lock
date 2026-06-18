@@ -283,12 +283,12 @@
                 {
                     "name": "Dragonfly Development Inc.",
                     "email": "info@dflydev.com",
-                    "homepage": "http://dflydev.com"
+                    "homepage": "https://dflydev.com"
                 },
                 {
                     "name": "Beau Simensen",
                     "email": "beau@dflydev.com",
-                    "homepage": "http://beausimensen.com"
+                    "homepage": "https://beausimensen.com"
                 },
                 {
                     "name": "Carlos Frutos",
@@ -3122,7 +3122,7 @@
                 }
             ],
             "description": "Common reflection classes used by phpdocumentor to reflect the code structure",
-            "homepage": "http://www.phpdoc.org",
+            "homepage": "https://www.phpdoc.org",
             "keywords": [
                 "FQSEN",
                 "phpDocumentor",
@@ -3569,7 +3569,7 @@
             "authors": [
                 {
                     "name": "PHP-FIG",
-                    "homepage": "http://www.php-fig.org/"
+                    "homepage": "https://www.php-fig.org/"
                 }
             ],
             "description": "Standard interfaces for event handling.",
@@ -7710,7 +7710,7 @@
                 {
                     "name": "Jordi Boggiano",
                     "email": "j.boggiano@seld.be",
-                    "homepage": "http://seld.be"
+                    "homepage": "https://seld.be"
                 }
             ],
             "description": "PCRE wrapping library that offers type-safe preg_* replacements.",
