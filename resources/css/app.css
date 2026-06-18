@@ -41,6 +41,8 @@
   --sidebar-ring: oklch(0.4650 0.1470 24.9381);
   --success: oklch(0.627 0.194 149.2);
   --success-foreground: oklch(0.99 0.02 149.2);
+  --warning: oklch(0.795 0.153 74.5);
+  --warning-foreground: oklch(0.25 0.08 74.5);
   --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --font-serif: Libre Baskerville, serif;
   --font-mono: IBM Plex Mono, monospace;
@@ -98,6 +100,8 @@
   --sidebar-ring: oklch(0.5054 0.1905 27.5181);
   --success: oklch(0.72 0.16 149.2);
   --success-foreground: oklch(0.15 0.05 149.2);
+  --warning: oklch(0.795 0.153 74.5);
+  --warning-foreground: oklch(0.95 0.03 74.5);
 }
 
 @theme inline {
@@ -135,6 +139,8 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
@@ -176,5 +182,58 @@
   body,
   html {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  }
+
+  /* Custom slim scrollbar (no rounded corners) */
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  .custom-scrollbar::-webkit-scrollbar {
+    @apply w-[4px] h-[4px];
+  }
+  html::-webkit-scrollbar-track,
+  body::-webkit-scrollbar-track,
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  html::-webkit-scrollbar-thumb,
+  body::-webkit-scrollbar-thumb,
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-[rgba(156,163,175,0.25)] rounded-none;
+  }
+  html::-webkit-scrollbar-thumb:hover,
+  body::-webkit-scrollbar-thumb:hover,
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-[rgba(156,163,175,0.45)];
+  }
+
+  /* Firefox support */
+  html,
+  body,
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.25) transparent;
+  }
+
+  /* Custom helper utilities to avoid inline arbitrary template brackets */
+  .kanban-container {
+    height: calc(100vh - 65px);
+  }
+
+  .rating-badge-custom {
+    font-size: 8px;
+    padding: 0.5px 3.5px;
+    line-height: 1;
+  }
+
+  .dialog-content-scroll {
+    max-height: 85vh;
+  }
+
+  .code-pre-max {
+    max-height: 150px;
+  }
+
+  .text-2xs {
+    font-size: 10px;
   }
 }
