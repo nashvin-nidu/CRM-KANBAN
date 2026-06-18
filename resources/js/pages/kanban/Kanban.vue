@@ -81,26 +81,26 @@ interface Column {
 const LOCAL_STORAGE_KEY = 'crm_leads';
 
 const defaultLeads: Lead[] = [
-    { id: 1, name: 'Alice Smith', email: 'alice@example.com', company: 'Acme Corp', status: 'New', value: 12500, source: 'Website', date: '2026-06-05', rating: 'warm' },
-    { id: 2, name: 'Bob Johnson', email: 'bob@example.com', company: 'Infinite Loop', status: 'Contacted', value: 45000, source: 'Referral', date: '2026-06-03', rating: 'cold' },
-    { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', company: 'Peanuts Inc', status: 'Qualified', value: 8000, source: 'LinkedIn', date: '2026-06-02', rating: 'warm' },
-    { id: 4, name: 'Diana Prince', email: 'diana@example.com', company: 'Wayne Ent.', status: 'Proposal Sent', value: 95000, source: 'Direct', date: '2026-05-30', rating: 'warm' },
-    { id: 5, name: 'Ethan Hunt', email: 'ethan@example.com', company: 'IMF Agency', status: 'Won', value: 150000, source: 'Referral', date: '2026-05-28', rating: 'warm' },
-    { id: 6, name: 'Fiona Gallagher', email: 'fiona@example.com', company: 'Patsy\'s Pies', status: 'Lost', value: 3200, source: 'Cold Call', date: '2026-05-25', rating: 'cold' },
-    { id: 7, name: 'George Clark', email: 'george@example.com', company: 'Nexus Ltd', status: 'New', value: 18000, source: 'Website', date: '2026-06-10', rating: 'cold' },
-    { id: 8, name: 'Hannah Abbott', email: 'hannah@example.com', company: 'Apothecary Co', status: 'Contacted', value: 5200, source: 'Inbound', date: '2026-06-09', rating: 'warm' },
-    { id: 9, name: 'Ian Malcolm', email: 'ian@example.com', company: 'InGen Bios', status: 'Qualified', value: 65000, source: 'Conference', date: '2026-06-08', rating: 'warm' },
-    { id: 10, name: 'Julia Roberts', email: 'julia@example.com', company: 'Pretty Pics', status: 'Proposal Sent', value: 120000, source: 'Referral', date: '2026-06-07', rating: 'warm' },
-    { id: 11, name: 'Kevin Bacon', email: 'kevin@example.com', company: 'Six Degrees', status: 'Won', value: 30000, source: 'Direct', date: '2026-06-06', rating: 'cold' },
-    { id: 12, name: 'Laura Croft', email: 'laura@example.com', company: 'Tomb Explorer', status: 'Lost', value: 45000, source: 'Cold Call', date: '2026-06-05', rating: 'cold' },
-    { id: 13, name: 'Bruce Wayne', email: 'bruce@example.com', company: 'Wayne Ent.', status: 'New', value: 500000, source: 'Direct', date: '2026-06-12', rating: 'warm' },
-    { id: 14, name: 'Clark Kent', email: 'clark@example.com', company: 'Daily Planet', status: 'Contacted', value: 15000, source: 'Website', date: '2026-06-11', rating: 'cold' },
-    { id: 15, name: 'Peter Parker', email: 'peter@example.com', company: 'Daily Bugle', status: 'Qualified', value: 9000, source: 'LinkedIn', date: '2026-06-10', rating: 'warm' },
-    { id: 16, name: 'Tony Stark', email: 'tony@example.com', company: 'Stark Ind.', status: 'Proposal Sent', value: 750000, source: 'Referral', date: '2026-06-09', rating: 'warm' },
-    { id: 17, name: 'Natasha Romanoff', email: 'natasha@example.com', company: 'S.H.I.E.L.D.', status: 'Won', value: 110000, source: 'Inbound', date: '2026-06-08', rating: 'warm' },
-    { id: 18, name: 'Steve Rogers', email: 'steve@example.com', company: 'Brooklyn Sp.', status: 'New', value: 25000, source: 'Conference', date: '2026-06-12', rating: 'cold' },
-    { id: 19, name: 'Wanda Maximoff', email: 'wanda@example.com', company: 'Westview Co', status: 'Qualified', value: 85000, source: 'Website', date: '2026-06-11', rating: 'warm' },
-    { id: 20, name: 'Barry Allen', email: 'barry@example.com', company: 'Star Labs', status: 'Won', value: 60000, source: 'Referral', date: '2026-06-10', rating: 'cold' },
+    { id: 1, name: 'Alice Smith', email: 'alice@example.com', company: 'Acme Corp', status: 'New', value: 12500, source: 'Website', date: (() => { const d = new Date(); d.setDate(d.getDate() - 15); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
+    { id: 2, name: 'Bob Johnson', email: 'bob@example.com', company: 'Infinite Loop', status: 'Contacted', value: 45000, source: 'Referral', date: (() => { const d = new Date(); d.setDate(d.getDate() - 2); return d.toISOString().split('T')[0]; })(), rating: 'cold' },
+    { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', company: 'Peanuts Inc', status: 'Qualified', value: 8000, source: 'LinkedIn', date: (() => { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
+    { id: 4, name: 'Diana Prince', email: 'diana@example.com', company: 'Wayne Ent.', status: 'Proposal Sent', value: 95000, source: 'Direct', date: new Date().toISOString().split('T')[0], rating: 'warm' },
+    { id: 5, name: 'Ethan Hunt', email: 'ethan@example.com', company: 'IMF Agency', status: 'Won', value: 150000, source: 'Referral', date: (() => { const d = new Date(); d.setMonth(d.getMonth() - 2); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
+    { id: 6, name: 'Fiona Gallagher', email: 'fiona@example.com', company: 'Patsy\'s Pies', status: 'Lost', value: 3200, source: 'Cold Call', date: (() => { const d = new Date(); d.setFullYear(d.getFullYear() - 1); return d.toISOString().split('T')[0]; })(), rating: 'cold' },
+    { id: 7, name: 'George Clark', email: 'george@example.com', company: 'Nexus Ltd', status: 'New', value: 18000, source: 'Website', date: (() => { const d = new Date(); d.setDate(d.getDate() - 4); return d.toISOString().split('T')[0]; })(), rating: 'cold' },
+    { id: 8, name: 'Hannah Abbott', email: 'hannah@example.com', company: 'Apothecary Co', status: 'Contacted', value: 5200, source: 'Inbound', date: (() => { const d = new Date(); d.setDate(d.getDate() - 3); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
+    { id: 9, name: 'Ian Malcolm', email: 'ian@example.com', company: 'InGen Bios', status: 'Qualified', value: 65000, source: 'Conference', date: (() => { const d = new Date(); d.setDate(d.getDate() - 5); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
+    { id: 10, name: 'Julia Roberts', email: 'julia@example.com', company: 'Pretty Pics', status: 'Proposal Sent', value: 120000, source: 'Referral', date: (() => { const d = new Date(); d.setDate(d.getDate() - 6); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
+    { id: 11, name: 'Kevin Bacon', email: 'kevin@example.com', company: 'Six Degrees', status: 'Won', value: 30000, source: 'Direct', date: (() => { const d = new Date(); d.setDate(d.getDate() - 7); return d.toISOString().split('T')[0]; })(), rating: 'cold' },
+    { id: 12, name: 'Laura Croft', email: 'laura@example.com', company: 'Tomb Explorer', status: 'Lost', value: 45000, source: 'Cold Call', date: (() => { const d = new Date(); d.setDate(d.getDate() - 8); return d.toISOString().split('T')[0]; })(), rating: 'cold' },
+    { id: 13, name: 'Bruce Wayne', email: 'bruce@example.com', company: 'Wayne Ent.', status: 'New', value: 500000, source: 'Direct', date: new Date().toISOString().split('T')[0], rating: 'warm' },
+    { id: 14, name: 'Clark Kent', email: 'clark@example.com', company: 'Daily Planet', status: 'Contacted', value: 15000, source: 'Website', date: (() => { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0]; })(), rating: 'cold' },
+    { id: 15, name: 'Peter Parker', email: 'peter@example.com', company: 'Daily Bugle', status: 'Qualified', value: 9000, source: 'LinkedIn', date: (() => { const d = new Date(); d.setDate(d.getDate() - 2); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
+    { id: 16, name: 'Tony Stark', email: 'tony@example.com', company: 'Stark Ind.', status: 'Proposal Sent', value: 750000, source: 'Referral', date: (() => { const d = new Date(); d.setDate(d.getDate() - 3); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
+    { id: 17, name: 'Natasha Romanoff', email: 'natasha@example.com', company: 'S.H.I.E.L.D.', status: 'Won', value: 110000, source: 'Inbound', date: (() => { const d = new Date(); d.setDate(d.getDate() - 4); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
+    { id: 18, name: 'Steve Rogers', email: 'steve@example.com', company: 'Brooklyn Sp.', status: 'New', value: 25000, source: 'Conference', date: (() => { const d = new Date(); d.setDate(d.getDate() - 10); return d.toISOString().split('T')[0]; })(), rating: 'cold' },
+    { id: 19, name: 'Wanda Maximoff', email: 'wanda@example.com', company: 'Westview Co', status: 'Qualified', value: 85000, source: 'Website', date: (() => { const d = new Date(); d.setDate(d.getDate() - 12); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
+    { id: 20, name: 'Barry Allen', email: 'barry@example.com', company: 'Star Labs', status: 'Won', value: 60000, source: 'Referral', date: (() => { const d = new Date(); d.setDate(d.getDate() - 14); return d.toISOString().split('T')[0]; })(), rating: 'cold' },
 ];
 
 const searchQuery = ref('');
@@ -215,8 +215,8 @@ const persistBoard = () => {
 
 const initColumns = () => {
     let leads = loadLeads();
-    // If the saved leads array matches the old 6-lead default length, reset it to the new 20-lead default list
-    if (leads.length <= 6) {
+    // Reset if it's the old 6-lead list or has static dates to seed the dynamic dates list
+    if (leads.length <= 6 || leads[0]?.date === '2026-06-05') {
         leads = defaultLeads;
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(leads));
     }
@@ -247,24 +247,80 @@ const onDragChange = (evt: any, targetColumnId: Column['id']) => {
     }
 };
 
-const matchesSearch = (lead: Lead) => {
-    if (!searchQuery.value) return true;
-    const q = searchQuery.value.toLowerCase();
-    return (
-        lead.name.toLowerCase().includes(q) ||
-        lead.company.toLowerCase().includes(q) ||
-        lead.email.toLowerCase().includes(q) ||
-        lead.source.toLowerCase().includes(q)
-    );
+const dateFilter = ref('all');
+const statusFilter = ref('all');
+
+const isSameDay = (d1: Date, d2: Date) => {
+    return d1.getFullYear() === d2.getFullYear() &&
+           d1.getMonth() === d2.getMonth() &&
+           d1.getDate() === d2.getDate();
+};
+
+const isThisWeek = (d: Date, refDate: Date) => {
+    const startOfWeek = new Date(refDate);
+    const day = refDate.getDay();
+    startOfWeek.setDate(refDate.getDate() - day);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    return d >= startOfWeek && d <= endOfWeek;
+};
+
+const isThisMonth = (d: Date, refDate: Date) => {
+    return d.getFullYear() === refDate.getFullYear() &&
+           d.getMonth() === refDate.getMonth();
+};
+
+const isThisYear = (d: Date, refDate: Date) => {
+    return d.getFullYear() === refDate.getFullYear();
+};
+
+const matchesFilters = (lead: Lead) => {
+    // 1. Search Query
+    if (searchQuery.value) {
+        const q = searchQuery.value.toLowerCase();
+        const matchesSearch = 
+            lead.name.toLowerCase().includes(q) ||
+            lead.company.toLowerCase().includes(q) ||
+            lead.email.toLowerCase().includes(q) ||
+            lead.source.toLowerCase().includes(q);
+        if (!matchesSearch) return false;
+    }
+
+    // 2. Status Filter
+    if (statusFilter.value !== 'all') {
+        if (lead.status !== statusFilter.value) return false;
+    }
+
+    // 3. Date Filter
+    if (dateFilter.value !== 'all') {
+        const leadDate = new Date(lead.date);
+        const today = new Date();
+        
+        if (dateFilter.value === 'today') {
+            if (!isSameDay(leadDate, today)) return false;
+        } else if (dateFilter.value === 'week') {
+            if (!isThisWeek(leadDate, today)) return false;
+        } else if (dateFilter.value === 'month') {
+            if (!isThisMonth(leadDate, today)) return false;
+        } else if (dateFilter.value === 'year') {
+            if (!isThisYear(leadDate, today)) return false;
+        }
+    }
+
+    return true;
 };
 
 const getColumnLeadsCount = (col: Column) => {
-    return col.leads.filter(matchesSearch).length;
+    return col.leads.filter(matchesFilters).length;
 };
 
 const getColumnTotalValue = (col: Column) => {
     const sum = col.leads
-        .filter(matchesSearch)
+        .filter(matchesFilters)
         .reduce((acc, lead) => acc + lead.value, 0);
     return formatCurrency(sum);
 };
@@ -397,12 +453,12 @@ const deleteLead = (id: number) => {
 <template>
     <Head title="Kanban" />
 
-    <div class="flex flex-col gap-6 p-6 overflow-hidden" style="height: calc(100vh - 65px)">
+    <div class="flex flex-col gap-6 p-6 overflow-hidden kanban-container">
         <!-- Header Section -->
         <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between shrink-0">
             <div>
                 <h1 class="text-3xl font-semibold tracking-tight text-foreground">Kanban Board</h1>
-                <p class="text-sm text-muted-foreground">Manage leads and track pipeline stages interactively.</p>
+                <p class="text-sm text-muted-foreground">Drag and Manage leads and track pipeline stages interactively.</p>
             </div>
             <div class="flex items-center gap-2 relative">
                 <!-- Collapsible Search input -->
@@ -410,7 +466,7 @@ const deleteLead = (id: number) => {
                     class="relative transition-all duration-300 ease-in-out overflow-hidden flex items-center"
                     :class="[isSearchExpanded ? 'w-52 opacity-100' : 'w-0 opacity-0 pointer-events-none']"
                 >
-                    <Search class="absolute left-2.5 size-4 text-muted-foreground pointer-events-none" />
+                    <Search class="absolute left-2.5 w-4 h-4 text-muted-foreground pointer-events-none" />
                     <Input
                         ref="searchInputRef"
                         v-model="searchQuery"
@@ -423,17 +479,44 @@ const deleteLead = (id: number) => {
                 <Button 
                     variant="ghost" 
                     size="icon" 
-                    class="size-9 shrink-0 text-muted-foreground hover:text-foreground" 
+                    class="w-9 h-9 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted" 
                     @click="toggleSearch"
-                    :class="{'text-primary hover:text-primary/90': isSearchExpanded}"
+                    :class="{'text-foreground bg-muted': isSearchExpanded}"
                 >
-                    <X class="size-4" v-if="isSearchExpanded" />
-                    <Search class="size-4" v-else />
+                    <X class="w-4 h-4" v-if="isSearchExpanded" />
+                    <Search class="w-4 h-4" v-else />
                 </Button>
 
+                <!-- Date Filter Dropdown -->
+                <Select v-model="dateFilter">
+                    <SelectTrigger class="w-32 h-9 text-xs">
+                        <SelectValue placeholder="Date Created" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all" class="text-xs">All Time</SelectItem>
+                        <SelectItem value="today" class="text-xs">Today</SelectItem>
+                        <SelectItem value="week" class="text-xs">This Week</SelectItem>
+                        <SelectItem value="month" class="text-xs">This Month</SelectItem>
+                        <SelectItem value="year" class="text-xs">This Year</SelectItem>
+                    </SelectContent>
+                </Select>
+
+                <!-- Status Filter Dropdown -->
+                <Select v-model="statusFilter">
+                    <SelectTrigger class="w-32 h-9 text-xs">
+                        <SelectValue placeholder="Stage Filter" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all" class="text-xs">All Stages</SelectItem>
+                        <SelectItem v-for="col in columns" :key="col.id" :value="col.id" class="text-xs">
+                            {{ col.name }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+
                 <!-- New Lead Button -->
-                <Button class="shrink-0" @click="openAddDialog()">
-                    <Plus class="mr-2 h-4 w-4" />
+                <Button class="shrink-0 h-9 px-4 text-sm" @click="openAddDialog()">
+                    <Plus class="mr-2 w-4 h-4" />
                     New Lead
                 </Button>
             </div>
@@ -444,7 +527,7 @@ const deleteLead = (id: number) => {
             <div
                 v-for="col in columns"
                 :key="col.id"
-                class="w-64 min-w-64 max-h-full flex flex-col rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-sidebar/30 dark:bg-sidebar/10 shadow-xs border-t-2"
+                class="w-56 min-w-56 max-h-full flex flex-col rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-sidebar/30 dark:bg-sidebar/10 shadow-sm border-t-2"
                 :class="col.borderClass"
             >
                 <!-- Column Header -->
@@ -452,21 +535,21 @@ const deleteLead = (id: number) => {
                     <div class="flex items-center gap-1.5">
                         <span :class="['w-2 h-2 rounded-full', col.indicatorClass]"></span>
                         <span class="font-semibold text-xs text-foreground leading-none">{{ col.name }}</span>
-                        <Badge variant="secondary" class="h-4 px-1 text-xs font-bold">
+                        <Badge variant="secondary" class="h-4 px-1 text-2xs font-bold rounded-sm">
                             {{ getColumnLeadsCount(col) }}
                         </Badge>
                     </div>
                     <div class="flex items-center gap-1">
-                        <span class="text-xs font-bold text-muted-foreground">
+                        <span class="text-2xs font-bold text-muted-foreground">
                             {{ getColumnTotalValue(col) }}
                         </span>
                         <Button
                             variant="ghost"
                             size="icon"
-                            class="size-5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground"
+                            class="w-5 h-5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground"
                             @click="openAddDialog(col.id)"
                         >
-                            <Plus class="size-3" />
+                            <Plus class="w-3 h-3" />
                         </Button>
                     </div>
                 </div>
@@ -476,7 +559,8 @@ const deleteLead = (id: number) => {
                     v-model="col.leads"
                     group="leads"
                     :animation="150"
-                    handle=".drag-handle"
+                    filter=".no-drag"
+                    :prevent-on-filter="false"
                     ghost-class="opacity-40"
                     drag-class="cursor-grabbing"
                     class="flex-1 flex flex-col gap-2 p-2 overflow-y-auto custom-scrollbar"
@@ -485,29 +569,29 @@ const deleteLead = (id: number) => {
                     <div
                         v-for="lead in col.leads"
                         :key="lead.id"
-                        v-show="matchesSearch(lead)"
-                        class="group/card flex items-center justify-between p-2 rounded-lg border border-sidebar-border/70 dark:border-sidebar-border bg-card hover:border-foreground/20 dark:hover:border-foreground/35 hover:shadow-2xs transition-all duration-200"
+                        v-show="matchesFilters(lead)"
+                        class="group/card flex items-center justify-between p-2 rounded-lg border border-sidebar-border/70 dark:border-sidebar-border bg-card hover:border-foreground/20 dark:hover:border-foreground/35 hover:shadow-2xs transition-all duration-200 cursor-grab active:cursor-grabbing"
                     >
                         <div class="flex items-center gap-2 min-w-0 flex-1">
-                            <!-- Drag Handle (6 dots) -->
-                            <div class="drag-handle cursor-grab active:cursor-grabbing text-muted-foreground/45 hover:text-foreground shrink-0 p-0.5 rounded-md hover:bg-muted transition-colors">
-                                <GripVertical class="size-3.5" />
+                            <!-- Drag Indicator (6 dots) -->
+                            <div class="text-muted-foreground/45 hover:text-foreground shrink-0 p-0.5 rounded hover:bg-muted transition-colors">
+                                <GripVertical class="w-3.5 h-3.5" />
                             </div>
 
                             <!-- Card Content (Compact details) -->
                             <div class="min-w-0 flex-1">
-                                <div class="flex items-center gap-1.5 justify-between pr-2">
-                                    <span class="font-medium text-xs text-foreground truncate max-w-36">
+                                <div class="flex items-center gap-1.5 justify-between pr-1">
+                                    <span class="font-medium text-xs text-foreground truncate max-w-28">
                                         {{ lead.name }}
                                     </span>
                                     <span class="text-xs font-bold text-success shrink-0">
                                         {{ formatCurrency(lead.value) }}
                                     </span>
                                 </div>
-                                <div class="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
-                                    <span class="truncate max-w-32">{{ lead.company }}</span>
+                                <div class="flex items-center gap-1.5 mt-0.5 text-2xs text-muted-foreground">
+                                    <span class="truncate max-w-24">{{ lead.company }}</span>
                                     <span v-if="lead.rating" :class="[
-                                        'text-xs px-1 py-0 rounded font-semibold uppercase tracking-wider border shrink-0',
+                                        'rating-badge-custom rounded-sm font-bold uppercase border shrink-0',
                                         lead.rating === 'warm' 
                                             ? 'bg-destructive/10 text-destructive border-destructive/20' 
                                             : 'bg-muted text-muted-foreground border-muted-foreground/15'
@@ -522,10 +606,10 @@ const deleteLead = (id: number) => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            class="size-6 rounded-md text-muted-foreground hover:text-foreground shrink-0 opacity-0 group-hover/card:opacity-100 focus:opacity-100 transition-opacity"
+                            class="no-drag w-6 h-6 rounded-md text-muted-foreground hover:text-foreground shrink-0 opacity-0 group-hover/card:opacity-100 focus:opacity-100 transition-opacity"
                             @click="openDetailsDialog(lead)"
                         >
-                            <ExternalLink class="size-3" />
+                            <ExternalLink class="w-3 h-3" />
                         </Button>
                     </div>
 
@@ -534,9 +618,9 @@ const deleteLead = (id: number) => {
                         v-if="getColumnLeadsCount(col) === 0"
                         class="flex-1 flex flex-col items-center justify-center border border-dashed border-sidebar-border/50 rounded-lg p-4 text-center text-xs text-muted-foreground min-h-28"
                     >
-                        <Briefcase class="size-4 mb-1 opacity-40" />
+                        <Briefcase class="w-4 h-4 mb-1 opacity-40" />
                         <span>No leads matching.</span>
-                        <span class="text-xs opacity-70">Drag cards here.</span>
+                        <span class="text-2xs opacity-70">Drag cards here.</span>
                     </div>
                 </VueDraggable>
             </div>
@@ -699,27 +783,3 @@ const deleteLead = (id: number) => {
         </Dialog>
     </div>
 </template>
-
-<style scoped>
-/* Custom slim scrollbar for columns & list */
-.custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(156, 163, 175, 0.25);
-    border-radius: 9999px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(156, 163, 175, 0.45);
-}
-
-/* Firefox support */
-.custom-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(156, 163, 175, 0.25) transparent;
-}
-</style>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import {LayoutGrid, Kanban as KanbanIcon , Users } from '@lucide/vue';
+import { LayoutGrid, Kanban as KanbanIcon, Users, PlugZap } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -13,7 +13,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard, kanban, leads } from '@/routes';
+import { dashboard, kanban, leads, integrations } from '@/routes';
 import type { NavItem } from '@/types';
 
 //Nav items
@@ -32,6 +32,11 @@ const mainNavItems: NavItem[] = [
         title: 'Kanban',
         href: kanban(),
         icon: KanbanIcon ,
+    },
+    {
+        title: 'Integrations',
+        href: integrations(),
+        icon: PlugZap  ,
     },
 ];
 </script>
