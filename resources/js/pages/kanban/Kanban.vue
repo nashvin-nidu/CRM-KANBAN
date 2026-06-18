@@ -214,7 +214,12 @@ const persistBoard = () => {
 };
 
 const initColumns = () => {
-    const leads = loadLeads();
+    let leads = loadLeads();
+    // If the saved leads array matches the old 6-lead default length, reset it to the new 20-lead default list
+    if (leads.length <= 6) {
+        leads = defaultLeads;
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(leads));
+    }
     columns.value.forEach(col => {
         col.leads = leads.filter(l => l.status === col.id);
     });
