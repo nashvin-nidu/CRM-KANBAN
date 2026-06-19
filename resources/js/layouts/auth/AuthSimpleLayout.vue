@@ -10,28 +10,44 @@ defineProps<{
 </script>
 
 <template>
-    <div
-        class="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10"
-    >
-        <div class="w-full max-w-sm">
-            <div class="flex flex-col gap-8">
-                <div class="flex flex-col items-center gap-4">
+    <div class="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+        <!-- Left Side: Image (Desktop only) -->
+        <div class="relative hidden bg-muted lg:block">
+            <img
+                src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80"
+                alt="Authentication Background"
+                class="absolute inset-0 h-full w-full object-cover dark:brightness-75"
+            />
+            <!-- Overlay visual description -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-12 text-white">
+                <div class="flex items-center gap-2 mb-3">
+                    <AppLogoIcon class="size-8 fill-current text-white" />
+                    <span class="text-xl font-bold tracking-tight">Streamline CRM</span>
+                </div>
+                <p class="text-sm text-white/80 max-w-sm">
+                    Manage your sales pipeline, track deals, and optimize your conversions with our intuitive visual Kanban interface.
+                </p>
+            </div>
+        </div>
+
+        <!-- Right Side: Login Content -->
+        <div class="flex flex-col items-center justify-center p-6 sm:p-10 lg:p-16">
+            <div class="w-full max-w-sm space-y-6">
+                <div class="flex flex-col items-center gap-4 text-center">
                     <Link
                         :href="home()"
-                        class="flex flex-col items-center gap-2 font-medium"
+                        class="flex items-center gap-2 font-medium"
                     >
-                        <div
-                            class="mb-1 flex h-9 w-9 items-center justify-center rounded-md"
-                        >
+                        <div class="flex h-9 w-9 items-center justify-center rounded-md">
                             <AppLogoIcon
-                                class="size-9 fill-current text-[var(--foreground)] dark:text-white"
+                                class="size-9 fill-current text-foreground dark:text-white"
                             />
                         </div>
-                        <span class="sr-only">{{ title }}</span>
+                        <span class="text-xl font-bold tracking-tight text-foreground">Streamline CRM</span>
                     </Link>
-                    <div class="space-y-2 text-center">
-                        <h1 class="text-xl font-medium">{{ title }}</h1>
-                        <p class="text-center text-sm text-muted-foreground">
+                    <div class="space-y-2">
+                        <h1 class="text-2xl font-bold tracking-tight text-foreground">{{ title }}</h1>
+                        <p class="text-sm text-muted-foreground">
                             {{ description }}
                         </p>
                     </div>
