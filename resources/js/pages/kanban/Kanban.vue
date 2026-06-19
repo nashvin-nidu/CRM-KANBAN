@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { Head } from '@inertiajs/vue3';
-import { kanban } from '@/routes';
-import { VueDraggable } from 'vue-draggable-plus';
-import { useSidebar } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
-import { toast } from 'vue-sonner';
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardFooter,
-} from '@/components/ui/card';
+    Search,
+    Plus,
+    Trash2,
+    Briefcase,
+    X,
+    GripVertical,
+    ExternalLink,
+} from '@lucide/vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { VueDraggable } from 'vue-draggable-plus';
+import { toast } from 'vue-sonner';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+
 import {
     Dialog,
     DialogContent,
@@ -23,6 +23,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -31,21 +33,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {
-    Search,
-    Plus,
-    Mail,
-    Building,
-    DollarSign,
-    Calendar,
-    Trash2,
-    Briefcase,
-    Globe,
-    Check,
-    X,
-    GripVertical,
-    ExternalLink,
-} from '@lucide/vue';
+import { useSidebar } from '@/components/ui/sidebar';
+import { kanban } from '@/routes';
 
 defineOptions({
     layout: {
@@ -63,7 +52,13 @@ interface Lead {
     name: string;
     email: string;
     company: string;
-    status: 'New' | 'Contacted' | 'Qualified' | 'Proposal Sent' | 'Won' | 'Lost';
+    status:
+        | 'New'
+        | 'Contacted'
+        | 'Qualified'
+        | 'Proposal Sent'
+        | 'Won'
+        | 'Lost';
     value: number;
     source: string;
     date: string;
@@ -81,26 +76,316 @@ interface Column {
 const LOCAL_STORAGE_KEY = 'crm_leads';
 
 const defaultLeads: Lead[] = [
-    { id: 1, name: 'Alice Smith', email: 'alice@example.com', company: 'Acme Corp', status: 'New', value: 12500, source: 'Website', date: (() => { const d = new Date(); d.setDate(d.getDate() - 15); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
-    { id: 2, name: 'Bob Johnson', email: 'bob@example.com', company: 'Infinite Loop', status: 'Contacted', value: 45000, source: 'Referral', date: (() => { const d = new Date(); d.setDate(d.getDate() - 2); return d.toISOString().split('T')[0]; })(), rating: 'cold' },
-    { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', company: 'Peanuts Inc', status: 'Qualified', value: 8000, source: 'LinkedIn', date: (() => { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
-    { id: 4, name: 'Diana Prince', email: 'diana@example.com', company: 'Wayne Ent.', status: 'Proposal Sent', value: 95000, source: 'Direct', date: new Date().toISOString().split('T')[0], rating: 'warm' },
-    { id: 5, name: 'Ethan Hunt', email: 'ethan@example.com', company: 'IMF Agency', status: 'Won', value: 150000, source: 'Referral', date: (() => { const d = new Date(); d.setMonth(d.getMonth() - 2); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
-    { id: 6, name: 'Fiona Gallagher', email: 'fiona@example.com', company: 'Patsy\'s Pies', status: 'Lost', value: 3200, source: 'Cold Call', date: (() => { const d = new Date(); d.setFullYear(d.getFullYear() - 1); return d.toISOString().split('T')[0]; })(), rating: 'cold' },
-    { id: 7, name: 'George Clark', email: 'george@example.com', company: 'Nexus Ltd', status: 'New', value: 18000, source: 'Website', date: (() => { const d = new Date(); d.setDate(d.getDate() - 4); return d.toISOString().split('T')[0]; })(), rating: 'cold' },
-    { id: 8, name: 'Hannah Abbott', email: 'hannah@example.com', company: 'Apothecary Co', status: 'Contacted', value: 5200, source: 'Inbound', date: (() => { const d = new Date(); d.setDate(d.getDate() - 3); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
-    { id: 9, name: 'Ian Malcolm', email: 'ian@example.com', company: 'InGen Bios', status: 'Qualified', value: 65000, source: 'Conference', date: (() => { const d = new Date(); d.setDate(d.getDate() - 5); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
-    { id: 10, name: 'Julia Roberts', email: 'julia@example.com', company: 'Pretty Pics', status: 'Proposal Sent', value: 120000, source: 'Referral', date: (() => { const d = new Date(); d.setDate(d.getDate() - 6); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
-    { id: 11, name: 'Kevin Bacon', email: 'kevin@example.com', company: 'Six Degrees', status: 'Won', value: 30000, source: 'Direct', date: (() => { const d = new Date(); d.setDate(d.getDate() - 7); return d.toISOString().split('T')[0]; })(), rating: 'cold' },
-    { id: 12, name: 'Laura Croft', email: 'laura@example.com', company: 'Tomb Explorer', status: 'Lost', value: 45000, source: 'Cold Call', date: (() => { const d = new Date(); d.setDate(d.getDate() - 8); return d.toISOString().split('T')[0]; })(), rating: 'cold' },
-    { id: 13, name: 'Bruce Wayne', email: 'bruce@example.com', company: 'Wayne Ent.', status: 'New', value: 500000, source: 'Direct', date: new Date().toISOString().split('T')[0], rating: 'warm' },
-    { id: 14, name: 'Clark Kent', email: 'clark@example.com', company: 'Daily Planet', status: 'Contacted', value: 15000, source: 'Website', date: (() => { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0]; })(), rating: 'cold' },
-    { id: 15, name: 'Peter Parker', email: 'peter@example.com', company: 'Daily Bugle', status: 'Qualified', value: 9000, source: 'LinkedIn', date: (() => { const d = new Date(); d.setDate(d.getDate() - 2); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
-    { id: 16, name: 'Tony Stark', email: 'tony@example.com', company: 'Stark Ind.', status: 'Proposal Sent', value: 750000, source: 'Referral', date: (() => { const d = new Date(); d.setDate(d.getDate() - 3); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
-    { id: 17, name: 'Natasha Romanoff', email: 'natasha@example.com', company: 'S.H.I.E.L.D.', status: 'Won', value: 110000, source: 'Inbound', date: (() => { const d = new Date(); d.setDate(d.getDate() - 4); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
-    { id: 18, name: 'Steve Rogers', email: 'steve@example.com', company: 'Brooklyn Sp.', status: 'New', value: 25000, source: 'Conference', date: (() => { const d = new Date(); d.setDate(d.getDate() - 10); return d.toISOString().split('T')[0]; })(), rating: 'cold' },
-    { id: 19, name: 'Wanda Maximoff', email: 'wanda@example.com', company: 'Westview Co', status: 'Qualified', value: 85000, source: 'Website', date: (() => { const d = new Date(); d.setDate(d.getDate() - 12); return d.toISOString().split('T')[0]; })(), rating: 'warm' },
-    { id: 20, name: 'Barry Allen', email: 'barry@example.com', company: 'Star Labs', status: 'Won', value: 60000, source: 'Referral', date: (() => { const d = new Date(); d.setDate(d.getDate() - 14); return d.toISOString().split('T')[0]; })(), rating: 'cold' },
+    {
+        id: 1,
+        name: 'Alice Smith',
+        email: 'alice@example.com',
+        company: 'Acme Corp',
+        status: 'New',
+        value: 12500,
+        source: 'Website',
+        date: (() => {
+            const d = new Date();
+            d.setDate(d.getDate() - 15);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'warm',
+    },
+    {
+        id: 2,
+        name: 'Bob Johnson',
+        email: 'bob@example.com',
+        company: 'Infinite Loop',
+        status: 'Contacted',
+        value: 45000,
+        source: 'Referral',
+        date: (() => {
+            const d = new Date();
+            d.setDate(d.getDate() - 2);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'cold',
+    },
+    {
+        id: 3,
+        name: 'Charlie Brown',
+        email: 'charlie@example.com',
+        company: 'Peanuts Inc',
+        status: 'Qualified',
+        value: 8000,
+        source: 'LinkedIn',
+        date: (() => {
+            const d = new Date();
+            d.setDate(d.getDate() - 1);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'warm',
+    },
+    {
+        id: 4,
+        name: 'Diana Prince',
+        email: 'diana@example.com',
+        company: 'Wayne Ent.',
+        status: 'Proposal Sent',
+        value: 95000,
+        source: 'Direct',
+        date: new Date().toISOString().split('T')[0],
+        rating: 'warm',
+    },
+    {
+        id: 5,
+        name: 'Ethan Hunt',
+        email: 'ethan@example.com',
+        company: 'IMF Agency',
+        status: 'Won',
+        value: 150000,
+        source: 'Referral',
+        date: (() => {
+            const d = new Date();
+            d.setMonth(d.getMonth() - 2);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'warm',
+    },
+    {
+        id: 6,
+        name: 'Fiona Gallagher',
+        email: 'fiona@example.com',
+        company: "Patsy's Pies",
+        status: 'Lost',
+        value: 3200,
+        source: 'Cold Call',
+        date: (() => {
+            const d = new Date();
+            d.setFullYear(d.getFullYear() - 1);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'cold',
+    },
+    {
+        id: 7,
+        name: 'George Clark',
+        email: 'george@example.com',
+        company: 'Nexus Ltd',
+        status: 'New',
+        value: 18000,
+        source: 'Website',
+        date: (() => {
+            const d = new Date();
+            d.setDate(d.getDate() - 4);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'cold',
+    },
+    {
+        id: 8,
+        name: 'Hannah Abbott',
+        email: 'hannah@example.com',
+        company: 'Apothecary Co',
+        status: 'Contacted',
+        value: 5200,
+        source: 'Inbound',
+        date: (() => {
+            const d = new Date();
+            d.setDate(d.getDate() - 3);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'warm',
+    },
+    {
+        id: 9,
+        name: 'Ian Malcolm',
+        email: 'ian@example.com',
+        company: 'InGen Bios',
+        status: 'Qualified',
+        value: 65000,
+        source: 'Conference',
+        date: (() => {
+            const d = new Date();
+            d.setDate(d.getDate() - 5);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'warm',
+    },
+    {
+        id: 10,
+        name: 'Julia Roberts',
+        email: 'julia@example.com',
+        company: 'Pretty Pics',
+        status: 'Proposal Sent',
+        value: 120000,
+        source: 'Referral',
+        date: (() => {
+            const d = new Date();
+            d.setDate(d.getDate() - 6);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'warm',
+    },
+    {
+        id: 11,
+        name: 'Kevin Bacon',
+        email: 'kevin@example.com',
+        company: 'Six Degrees',
+        status: 'Won',
+        value: 30000,
+        source: 'Direct',
+        date: (() => {
+            const d = new Date();
+            d.setDate(d.getDate() - 7);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'cold',
+    },
+    {
+        id: 12,
+        name: 'Laura Croft',
+        email: 'laura@example.com',
+        company: 'Tomb Explorer',
+        status: 'Lost',
+        value: 45000,
+        source: 'Cold Call',
+        date: (() => {
+            const d = new Date();
+            d.setDate(d.getDate() - 8);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'cold',
+    },
+    {
+        id: 13,
+        name: 'Bruce Wayne',
+        email: 'bruce@example.com',
+        company: 'Wayne Ent.',
+        status: 'New',
+        value: 500000,
+        source: 'Direct',
+        date: new Date().toISOString().split('T')[0],
+        rating: 'warm',
+    },
+    {
+        id: 14,
+        name: 'Clark Kent',
+        email: 'clark@example.com',
+        company: 'Daily Planet',
+        status: 'Contacted',
+        value: 15000,
+        source: 'Website',
+        date: (() => {
+            const d = new Date();
+            d.setDate(d.getDate() - 1);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'cold',
+    },
+    {
+        id: 15,
+        name: 'Peter Parker',
+        email: 'peter@example.com',
+        company: 'Daily Bugle',
+        status: 'Qualified',
+        value: 9000,
+        source: 'LinkedIn',
+        date: (() => {
+            const d = new Date();
+            d.setDate(d.getDate() - 2);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'warm',
+    },
+    {
+        id: 16,
+        name: 'Tony Stark',
+        email: 'tony@example.com',
+        company: 'Stark Ind.',
+        status: 'Proposal Sent',
+        value: 750000,
+        source: 'Referral',
+        date: (() => {
+            const d = new Date();
+            d.setDate(d.getDate() - 3);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'warm',
+    },
+    {
+        id: 17,
+        name: 'Natasha Romanoff',
+        email: 'natasha@example.com',
+        company: 'S.H.I.E.L.D.',
+        status: 'Won',
+        value: 110000,
+        source: 'Inbound',
+        date: (() => {
+            const d = new Date();
+            d.setDate(d.getDate() - 4);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'warm',
+    },
+    {
+        id: 18,
+        name: 'Steve Rogers',
+        email: 'steve@example.com',
+        company: 'Brooklyn Sp.',
+        status: 'New',
+        value: 25000,
+        source: 'Conference',
+        date: (() => {
+            const d = new Date();
+            d.setDate(d.getDate() - 10);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'cold',
+    },
+    {
+        id: 19,
+        name: 'Wanda Maximoff',
+        email: 'wanda@example.com',
+        company: 'Westview Co',
+        status: 'Qualified',
+        value: 85000,
+        source: 'Website',
+        date: (() => {
+            const d = new Date();
+            d.setDate(d.getDate() - 12);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'warm',
+    },
+    {
+        id: 20,
+        name: 'Barry Allen',
+        email: 'barry@example.com',
+        company: 'Star Labs',
+        status: 'Won',
+        value: 60000,
+        source: 'Referral',
+        date: (() => {
+            const d = new Date();
+            d.setDate(d.getDate() - 14);
+
+            return d.toISOString().split('T')[0];
+        })(),
+        rating: 'cold',
+    },
 ];
 
 const searchQuery = ref('');
@@ -109,9 +394,11 @@ const searchInputRef = ref<any>(null);
 
 const toggleSearch = async () => {
     isSearchExpanded.value = !isSearchExpanded.value;
+
     if (isSearchExpanded.value) {
         await nextTick();
         const el = searchInputRef.value?.$el || searchInputRef.value;
+
         if (el && typeof el.focus === 'function') {
             el.focus();
         }
@@ -190,8 +477,12 @@ const columns = ref<Column[]>([
 ]);
 
 const loadLeads = (): Lead[] => {
-    if (typeof window === 'undefined') return defaultLeads;
+    if (typeof window === 'undefined') {
+        return defaultLeads;
+    }
+
     const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+
     if (data) {
         try {
             return JSON.parse(data);
@@ -199,13 +490,14 @@ const loadLeads = (): Lead[] => {
             console.error('Failed to parse leads from localstorage:', e);
         }
     }
+
     return defaultLeads;
 };
 
 const persistBoard = () => {
     const flatLeads: Lead[] = [];
-    columns.value.forEach(col => {
-        col.leads.forEach(lead => {
+    columns.value.forEach((col) => {
+        col.leads.forEach((lead) => {
             lead.status = col.id;
             flatLeads.push(lead);
         });
@@ -215,13 +507,15 @@ const persistBoard = () => {
 
 const initColumns = () => {
     let leads = loadLeads();
+
     // Reset if it's the old 6-lead list or has static dates to seed the dynamic dates list
     if (leads.length <= 6 || leads[0]?.date === '2026-06-05') {
         leads = defaultLeads;
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(leads));
     }
-    columns.value.forEach(col => {
-        col.leads = leads.filter(l => l.status === col.id);
+
+    columns.value.forEach((col) => {
+        col.leads = leads.filter((l) => l.status === col.id);
     });
 };
 
@@ -251,9 +545,11 @@ const dateFilter = ref('all');
 const statusFilter = ref('all');
 
 const isSameDay = (d1: Date, d2: Date) => {
-    return d1.getFullYear() === d2.getFullYear() &&
-           d1.getMonth() === d2.getMonth() &&
-           d1.getDate() === d2.getDate();
+    return (
+        d1.getFullYear() === d2.getFullYear() &&
+        d1.getMonth() === d2.getMonth() &&
+        d1.getDate() === d2.getDate()
+    );
 };
 
 const isThisWeek = (d: Date, refDate: Date) => {
@@ -270,8 +566,10 @@ const isThisWeek = (d: Date, refDate: Date) => {
 };
 
 const isThisMonth = (d: Date, refDate: Date) => {
-    return d.getFullYear() === refDate.getFullYear() &&
-           d.getMonth() === refDate.getMonth();
+    return (
+        d.getFullYear() === refDate.getFullYear() &&
+        d.getMonth() === refDate.getMonth()
+    );
 };
 
 const isThisYear = (d: Date, refDate: Date) => {
@@ -282,32 +580,45 @@ const matchesFilters = (lead: Lead) => {
     // 1. Search Query
     if (searchQuery.value) {
         const q = searchQuery.value.toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
             lead.name.toLowerCase().includes(q) ||
             lead.company.toLowerCase().includes(q) ||
             lead.email.toLowerCase().includes(q) ||
             lead.source.toLowerCase().includes(q);
-        if (!matchesSearch) return false;
+
+        if (!matchesSearch) {
+            return false;
+        }
     }
 
     // 2. Status Filter
     if (statusFilter.value !== 'all') {
-        if (lead.status !== statusFilter.value) return false;
+        if (lead.status !== statusFilter.value) {
+            return false;
+        }
     }
 
     // 3. Date Filter
     if (dateFilter.value !== 'all') {
         const leadDate = new Date(lead.date);
         const today = new Date();
-        
+
         if (dateFilter.value === 'today') {
-            if (!isSameDay(leadDate, today)) return false;
+            if (!isSameDay(leadDate, today)) {
+                return false;
+            }
         } else if (dateFilter.value === 'week') {
-            if (!isThisWeek(leadDate, today)) return false;
+            if (!isThisWeek(leadDate, today)) {
+                return false;
+            }
         } else if (dateFilter.value === 'month') {
-            if (!isThisMonth(leadDate, today)) return false;
+            if (!isThisMonth(leadDate, today)) {
+                return false;
+            }
         } else if (dateFilter.value === 'year') {
-            if (!isThisYear(leadDate, today)) return false;
+            if (!isThisYear(leadDate, today)) {
+                return false;
+            }
         }
     }
 
@@ -322,33 +633,16 @@ const getColumnTotalValue = (col: Column) => {
     const sum = col.leads
         .filter(matchesFilters)
         .reduce((acc, lead) => acc + lead.value, 0);
+
     return formatCurrency(sum);
 };
 
 const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
         style: 'currency',
-        currency: 'USD',
+        currency: 'INR',
         maximumFractionDigits: 0,
     }).format(val);
-};
-const getStatusClass = (status: string) => {
-    switch (status) {
-        case 'New':
-            return 'bg-muted text-muted-foreground border-transparent';
-        case 'Contacted':
-            return 'bg-accent text-accent-foreground border-transparent';
-        case 'Qualified':
-            return 'bg-secondary text-secondary-foreground border-transparent';
-        case 'Proposal Sent':
-            return 'bg-primary/10 text-primary border-transparent';
-        case 'Won':
-            return 'bg-primary text-primary-foreground border-transparent';
-        case 'Lost':
-            return 'bg-destructive/15 text-destructive dark:bg-destructive/25 border-transparent';
-        default:
-            return '';
-    }
 };
 
 const openAddDialog = (status: Column['id'] = 'New') => {
@@ -367,12 +661,16 @@ const openAddDialog = (status: Column['id'] = 'New') => {
 const createLead = () => {
     if (!newLead.value.name) {
         toast.error('Lead Name is required');
+
         return;
     }
 
     const status = newLead.value.status || 'New';
-    const targetCol = columns.value.find(c => c.id === status);
-    if (!targetCol) return;
+    const targetCol = columns.value.find((c) => c.id === status);
+
+    if (!targetCol) {
+        return;
+    }
 
     const lead: Lead = {
         id: Date.now(),
@@ -399,6 +697,7 @@ const openDetailsDialog = (lead: Lead) => {
 const saveLeadDetails = () => {
     if (!activeLead.value.name) {
         toast.error('Lead Name is required');
+
         return;
     }
 
@@ -406,19 +705,25 @@ const saveLeadDetails = () => {
     updated.value = Number(updated.value) || 0;
 
     let found = false;
+
     for (const col of columns.value) {
-        const idx = col.leads.findIndex(l => l.id === updated.id);
+        const idx = col.leads.findIndex((l) => l.id === updated.id);
+
         if (idx !== -1) {
             if (col.id !== updated.status) {
                 // Remove from old column, push to target column
                 col.leads.splice(idx, 1);
-                const targetCol = columns.value.find(c => c.id === updated.status);
+                const targetCol = columns.value.find(
+                    (c) => c.id === updated.status,
+                );
+
                 if (targetCol) {
                     targetCol.leads.push(updated);
                 }
             } else {
                 col.leads[idx] = updated;
             }
+
             found = true;
             break;
         }
@@ -428,13 +733,16 @@ const saveLeadDetails = () => {
         persistBoard();
         toast.success(`Updated Lead: ${updated.name}`);
     }
+
     isDetailsOpen.value = false;
 };
 
 const deleteLead = (id: number) => {
     let deleted = false;
+
     for (const col of columns.value) {
-        const idx = col.leads.findIndex(l => l.id === id);
+        const idx = col.leads.findIndex((l) => l.id === id);
+
         if (idx !== -1) {
             col.leads.splice(idx, 1);
             deleted = true;
@@ -446,6 +754,7 @@ const deleteLead = (id: number) => {
         persistBoard();
         toast.success('Lead deleted');
     }
+
     isDetailsOpen.value = false;
 };
 </script>
@@ -453,20 +762,35 @@ const deleteLead = (id: number) => {
 <template>
     <Head title="Kanban" />
 
-    <div class="flex flex-col gap-6 p-6 overflow-hidden kanban-container">
+    <div class="kanban-container flex flex-col gap-6 overflow-hidden p-6">
         <!-- Header Section -->
-        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between shrink-0">
+        <div
+            class="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+        >
             <div>
-                <h1 class="text-3xl font-semibold tracking-tight text-foreground">Kanban Board</h1>
-                <p class="text-sm text-muted-foreground">Drag and Manage leads and track pipeline stages interactively.</p>
-            </div>
-            <div class="flex items-center gap-2 relative">
-                <!-- Collapsible Search input -->
-                <div 
-                    class="relative transition-all duration-300 ease-in-out overflow-hidden flex items-center"
-                    :class="[isSearchExpanded ? 'w-52 opacity-100' : 'w-0 opacity-0 pointer-events-none']"
+                <h1
+                    class="text-3xl font-semibold tracking-tight text-foreground"
                 >
-                    <Search class="absolute left-2.5 w-4 h-4 text-muted-foreground pointer-events-none" />
+                    Kanban Board
+                </h1>
+                <p class="text-sm text-muted-foreground">
+                    Drag and Manage leads and track pipeline stages
+                    interactively.
+                </p>
+            </div>
+            <div class="relative flex items-center gap-2">
+                <!-- Collapsible Search input -->
+                <div
+                    class="relative flex items-center overflow-hidden transition-all duration-300 ease-in-out"
+                    :class="[
+                        isSearchExpanded
+                            ? 'w-52 opacity-100'
+                            : 'pointer-events-none w-0 opacity-0',
+                    ]"
+                >
+                    <Search
+                        class="pointer-events-none absolute left-2.5 h-4 w-4 text-muted-foreground"
+                    />
                     <Input
                         ref="searchInputRef"
                         v-model="searchQuery"
@@ -476,80 +800,120 @@ const deleteLead = (id: number) => {
                 </div>
 
                 <!-- Search toggle icon button -->
-                <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    class="w-9 h-9 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted" 
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    class="h-9 w-9 shrink-0 text-muted-foreground hover:bg-muted hover:text-foreground"
                     @click="toggleSearch"
-                    :class="{'text-foreground bg-muted': isSearchExpanded}"
+                    :class="{ 'bg-muted text-foreground': isSearchExpanded }"
                 >
-                    <X class="w-4 h-4" v-if="isSearchExpanded" />
-                    <Search class="w-4 h-4" v-else />
+                    <X class="h-4 w-4" v-if="isSearchExpanded" />
+                    <Search class="h-4 w-4" v-else />
                 </Button>
 
                 <!-- Date Filter Dropdown -->
                 <Select v-model="dateFilter">
-                    <SelectTrigger class="w-32 h-9 text-xs">
+                    <SelectTrigger class="h-9 w-32 text-xs">
                         <SelectValue placeholder="Date Created" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all" class="text-xs">All Time</SelectItem>
-                        <SelectItem value="today" class="text-xs">Today</SelectItem>
-                        <SelectItem value="week" class="text-xs">This Week</SelectItem>
-                        <SelectItem value="month" class="text-xs">This Month</SelectItem>
-                        <SelectItem value="year" class="text-xs">This Year</SelectItem>
+                        <SelectItem value="all" class="text-xs"
+                            >All Time</SelectItem
+                        >
+                        <SelectItem value="today" class="text-xs"
+                            >Today</SelectItem
+                        >
+                        <SelectItem value="week" class="text-xs"
+                            >This Week</SelectItem
+                        >
+                        <SelectItem value="month" class="text-xs"
+                            >This Month</SelectItem
+                        >
+                        <SelectItem value="year" class="text-xs"
+                            >This Year</SelectItem
+                        >
                     </SelectContent>
                 </Select>
 
                 <!-- Status Filter Dropdown -->
                 <Select v-model="statusFilter">
-                    <SelectTrigger class="w-32 h-9 text-xs">
+                    <SelectTrigger class="h-9 w-32 text-xs">
                         <SelectValue placeholder="Stage Filter" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all" class="text-xs">All Stages</SelectItem>
-                        <SelectItem v-for="col in columns" :key="col.id" :value="col.id" class="text-xs">
+                        <SelectItem value="all" class="text-xs"
+                            >All Stages</SelectItem
+                        >
+                        <SelectItem
+                            v-for="col in columns"
+                            :key="col.id"
+                            :value="col.id"
+                            class="text-xs"
+                        >
                             {{ col.name }}
                         </SelectItem>
                     </SelectContent>
                 </Select>
 
                 <!-- New Lead Button -->
-                <Button class="shrink-0 h-9 px-4 text-sm" @click="openAddDialog()">
-                    <Plus class="mr-2 w-4 h-4" />
+                <Button
+                    class="h-9 shrink-0 px-4 text-sm"
+                    @click="openAddDialog()"
+                >
+                    <Plus class="mr-2 h-4 w-4" />
                     New Lead
                 </Button>
             </div>
         </div>
 
         <!-- Board Wrapper -->
-        <div class="flex flex-1 gap-3 overflow-x-auto pb-3 select-none items-stretch max-h-full custom-scrollbar h-full">
+        <div
+            class="custom-scrollbar flex h-full max-h-full flex-1 items-stretch gap-3 overflow-x-auto pb-3 select-none"
+        >
             <div
                 v-for="col in columns"
                 :key="col.id"
-                class="w-56 min-w-56 max-h-full flex flex-col rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-sidebar/30 dark:bg-sidebar/10 shadow-sm border-t-2"
+                class="flex max-h-full w-56 min-w-56 flex-col rounded-xl border border-t-2 border-sidebar-border/70 bg-sidebar/30 shadow-sm dark:border-sidebar-border dark:bg-sidebar/10"
                 :class="col.borderClass"
             >
                 <!-- Column Header -->
-                <div class="flex items-center justify-between p-2.5 border-b border-sidebar-border/50 shrink-0 bg-sidebar/50 dark:bg-sidebar/30 rounded-t-xl">
+                <div
+                    class="flex shrink-0 items-center justify-between rounded-t-xl border-b border-sidebar-border/50 bg-sidebar/50 p-2.5 dark:bg-sidebar/30"
+                >
                     <div class="flex items-center gap-1.5">
-                        <span :class="['w-2 h-2 rounded-full', col.indicatorClass]"></span>
-                        <span class="font-semibold text-xs text-foreground leading-none">{{ col.name }}</span>
-                        <Badge variant="secondary" class="h-4 px-1 text-2xs font-bold rounded-sm">
+                        <span
+                            :class="[
+                                'h-2 w-2 rounded-full',
+                                col.indicatorClass,
+                            ]"
+                        ></span>
+                        <span
+                            class="text-xs leading-none font-semibold text-foreground"
+                            >{{ col.name }}</span
+                        >
+                        <Badge
+                            variant="secondary"
+                            class="text-2xs h-4 rounded-sm px-1 font-bold"
+                        >
                             {{ getColumnLeadsCount(col) }}
                         </Badge>
                     </div>
                     <div class="flex items-center gap-1">
-                        <span class="text-2xs font-bold text-muted-foreground">
+                        <span
+                            v-if="
+                                col.id === 'Proposal Sent' || col.id === 'Won'
+                            "
+                            class="text-2xs font-bold text-muted-foreground"
+                        >
                             {{ getColumnTotalValue(col) }}
                         </span>
                         <Button
                             variant="ghost"
                             size="icon"
-                            class="w-5 h-5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground"
+                            class="h-5 w-5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
                             @click="openAddDialog(col.id)"
                         >
-                            <Plus class="w-3 h-3" />
+                            <Plus class="h-3 w-3" />
                         </Button>
                     </div>
                 </div>
@@ -563,39 +927,58 @@ const deleteLead = (id: number) => {
                     :prevent-on-filter="false"
                     ghost-class="opacity-40"
                     drag-class="cursor-grabbing"
-                    class="flex-1 flex flex-col gap-2 p-2 overflow-y-auto custom-scrollbar"
+                    class="custom-scrollbar flex flex-1 flex-col gap-2 overflow-y-auto p-2"
                     @change="(evt) => onDragChange(evt, col.id)"
                 >
                     <div
                         v-for="lead in col.leads"
                         :key="lead.id"
                         v-show="matchesFilters(lead)"
-                        class="group/card flex items-center justify-between p-2 rounded-lg border border-sidebar-border/70 dark:border-sidebar-border bg-card hover:border-foreground/20 dark:hover:border-foreground/35 hover:shadow-2xs transition-all duration-200 cursor-grab active:cursor-grabbing"
+                        class="group/card flex cursor-grab items-center justify-between rounded-lg border border-sidebar-border/70 bg-card p-2 transition-all duration-200 hover:border-foreground/20 hover:shadow-2xs active:cursor-grabbing dark:border-sidebar-border dark:hover:border-foreground/35"
                     >
-                        <div class="flex items-center gap-2 min-w-0 flex-1">
+                        <div class="flex min-w-0 flex-1 items-center gap-2">
                             <!-- Drag Indicator (6 dots) -->
-                            <div class="text-muted-foreground/45 hover:text-foreground shrink-0 p-0.5 rounded hover:bg-muted transition-colors">
-                                <GripVertical class="w-3.5 h-3.5" />
+                            <div
+                                class="shrink-0 rounded p-0.5 text-muted-foreground/45 transition-colors hover:bg-muted hover:text-foreground"
+                            >
+                                <GripVertical class="h-3.5 w-3.5" />
                             </div>
 
                             <!-- Card Content (Compact details) -->
                             <div class="min-w-0 flex-1">
-                                <div class="flex items-center gap-1.5 justify-between pr-1">
-                                    <span class="font-medium text-xs text-foreground truncate max-w-28">
+                                <div
+                                    class="flex items-center justify-between gap-1.5 pr-1"
+                                >
+                                    <span
+                                        class="max-w-28 truncate text-xs font-medium text-foreground"
+                                    >
                                         {{ lead.name }}
                                     </span>
-                                    <span class="text-xs font-bold text-success shrink-0">
+                                    <span
+                                        v-if="
+                                            lead.status === 'Proposal Sent' ||
+                                            lead.status === 'Won'
+                                        "
+                                        class="shrink-0 text-xs font-bold text-success"
+                                    >
                                         {{ formatCurrency(lead.value) }}
                                     </span>
                                 </div>
-                                <div class="flex items-center gap-1.5 mt-0.5 text-2xs text-muted-foreground">
-                                    <span class="truncate max-w-24">{{ lead.company }}</span>
-                                    <span v-if="lead.rating" :class="[
-                                        'rating-badge-custom rounded-sm font-bold uppercase border shrink-0',
-                                        lead.rating === 'warm' 
-                                            ? 'bg-destructive/10 text-destructive border-destructive/20' 
-                                            : 'bg-muted text-muted-foreground border-muted-foreground/15'
-                                    ]">
+                                <div
+                                    class="text-2xs mt-0.5 flex items-center gap-1.5 text-muted-foreground"
+                                >
+                                    <span class="max-w-24 truncate">{{
+                                        lead.company
+                                    }}</span>
+                                    <span
+                                        v-if="lead.rating"
+                                        :class="[
+                                            'rating-badge-custom shrink-0 rounded-sm border font-bold uppercase',
+                                            lead.rating === 'warm'
+                                                ? 'border-destructive/20 bg-destructive/10 text-destructive'
+                                                : 'border-muted-foreground/15 bg-muted text-muted-foreground',
+                                        ]"
+                                    >
                                         {{ lead.rating }}
                                     </span>
                                 </div>
@@ -606,21 +989,23 @@ const deleteLead = (id: number) => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            class="no-drag w-6 h-6 rounded-md text-muted-foreground hover:text-foreground shrink-0 opacity-0 group-hover/card:opacity-100 focus:opacity-100 transition-opacity"
+                            class="no-drag h-6 w-6 shrink-0 rounded-md text-muted-foreground opacity-0 transition-opacity group-hover/card:opacity-100 hover:text-foreground focus:opacity-100"
                             @click="openDetailsDialog(lead)"
                         >
-                            <ExternalLink class="w-3 h-3" />
+                            <ExternalLink class="h-3 w-3" />
                         </Button>
                     </div>
 
                     <!-- Empty placeholder inside empty columns -->
                     <div
                         v-if="getColumnLeadsCount(col) === 0"
-                        class="flex-1 flex flex-col items-center justify-center border border-dashed border-sidebar-border/50 rounded-lg p-4 text-center text-xs text-muted-foreground min-h-28"
+                        class="flex min-h-28 flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-sidebar-border/50 p-4 text-center text-xs text-muted-foreground"
                     >
-                        <Briefcase class="w-4 h-4 mb-1 opacity-40" />
+                        <Briefcase class="mb-1 h-4 w-4 opacity-40" />
                         <span>No leads matching.</span>
-                        <span class="text-2xs opacity-70">Drag cards here.</span>
+                        <span class="text-2xs opacity-70"
+                            >Drag cards here.</span
+                        >
                     </div>
                 </VueDraggable>
             </div>
@@ -632,26 +1017,49 @@ const deleteLead = (id: number) => {
                 <DialogHeader>
                     <DialogTitle>Add New Lead</DialogTitle>
                     <DialogDescription>
-                        Create a new lead. It will be added to the stage you selected.
+                        Create a new lead. It will be added to the stage you
+                        selected.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div class="grid gap-4 py-4">
                     <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="name" class="text-right">Name</Label>
-                        <Input id="name" v-model="newLead.name" placeholder="John Doe" class="col-span-3" />
+                        <Input
+                            id="name"
+                            v-model="newLead.name"
+                            placeholder="John Doe"
+                            class="col-span-3"
+                        />
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="company" class="text-right">Company</Label>
-                        <Input id="company" v-model="newLead.company" placeholder="Acme Inc." class="col-span-3" />
+                        <Input
+                            id="company"
+                            v-model="newLead.company"
+                            placeholder="Acme Inc."
+                            class="col-span-3"
+                        />
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="email" class="text-right">Email</Label>
-                        <Input id="email" v-model="newLead.email" type="email" placeholder="john@example.com" class="col-span-3" />
+                        <Input
+                            id="email"
+                            v-model="newLead.email"
+                            type="email"
+                            placeholder="john@example.com"
+                            class="col-span-3"
+                        />
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="value" class="text-right">Value ($)</Label>
-                        <Input id="value" v-model="newLead.value" type="number" placeholder="5000" class="col-span-3" />
+                        <Label for="value" class="text-right">Value (₹)</Label>
+                        <Input
+                            id="value"
+                            v-model="newLead.value"
+                            type="number"
+                            placeholder="5000"
+                            class="col-span-3"
+                        />
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="status" class="text-right">Stage</Label>
@@ -662,7 +1070,11 @@ const deleteLead = (id: number) => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem v-for="col in columns" :key="col.id" :value="col.id">
+                                        <SelectItem
+                                            v-for="col in columns"
+                                            :key="col.id"
+                                            :value="col.id"
+                                        >
                                             {{ col.name }}
                                         </SelectItem>
                                     </SelectGroup>
@@ -672,19 +1084,30 @@ const deleteLead = (id: number) => {
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="source" class="text-right">Source</Label>
-                        <Input id="source" v-model="newLead.source" placeholder="Website" class="col-span-3" />
+                        <Input
+                            id="source"
+                            v-model="newLead.source"
+                            placeholder="Website"
+                            class="col-span-3"
+                        />
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="rating" class="text-right">Rating</Label>
                         <div class="col-span-3">
                             <Select v-model="newLead.rating">
                                 <SelectTrigger class="w-full">
-                                    <SelectValue placeholder="Select rating (optional)" />
+                                    <SelectValue
+                                        placeholder="Select rating (optional)"
+                                    />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem value="cold">Cold</SelectItem>
-                                        <SelectItem value="warm">Warm</SelectItem>
+                                        <SelectItem value="cold"
+                                            >Cold</SelectItem
+                                        >
+                                        <SelectItem value="warm"
+                                            >Warm</SelectItem
+                                        >
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
@@ -693,7 +1116,9 @@ const deleteLead = (id: number) => {
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" @click="isAddOpen = false">Cancel</Button>
+                    <Button variant="outline" @click="isAddOpen = false"
+                        >Cancel</Button
+                    >
                     <Button @click="createLead">Create Lead</Button>
                 </DialogFooter>
             </DialogContent>
@@ -712,22 +1137,46 @@ const deleteLead = (id: number) => {
                 <div class="grid gap-4 py-4">
                     <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="edit-name" class="text-right">Name</Label>
-                        <Input id="edit-name" v-model="activeLead.name" class="col-span-3" />
+                        <Input
+                            id="edit-name"
+                            v-model="activeLead.name"
+                            class="col-span-3"
+                        />
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="edit-company" class="text-right">Company</Label>
-                        <Input id="edit-company" v-model="activeLead.company" class="col-span-3" />
+                        <Label for="edit-company" class="text-right"
+                            >Company</Label
+                        >
+                        <Input
+                            id="edit-company"
+                            v-model="activeLead.company"
+                            class="col-span-3"
+                        />
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="edit-email" class="text-right">Email</Label>
-                        <Input id="edit-email" v-model="activeLead.email" type="email" class="col-span-3" />
+                        <Input
+                            id="edit-email"
+                            v-model="activeLead.email"
+                            type="email"
+                            class="col-span-3"
+                        />
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="edit-value" class="text-right">Value ($)</Label>
-                        <Input id="edit-value" v-model="activeLead.value" type="number" class="col-span-3" />
+                        <Label for="edit-value" class="text-right"
+                            >Value (₹)</Label
+                        >
+                        <Input
+                            id="edit-value"
+                            v-model="activeLead.value"
+                            type="number"
+                            class="col-span-3"
+                        />
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="edit-status" class="text-right">Stage</Label>
+                        <Label for="edit-status" class="text-right"
+                            >Stage</Label
+                        >
                         <div class="col-span-3">
                             <Select v-model="activeLead.status">
                                 <SelectTrigger class="w-full">
@@ -735,7 +1184,11 @@ const deleteLead = (id: number) => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem v-for="col in columns" :key="col.id" :value="col.id">
+                                        <SelectItem
+                                            v-for="col in columns"
+                                            :key="col.id"
+                                            :value="col.id"
+                                        >
                                             {{ col.name }}
                                         </SelectItem>
                                     </SelectGroup>
@@ -744,38 +1197,64 @@ const deleteLead = (id: number) => {
                         </div>
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="edit-source" class="text-right">Source</Label>
-                        <Input id="edit-source" v-model="activeLead.source" class="col-span-3" />
+                        <Label for="edit-source" class="text-right"
+                            >Source</Label
+                        >
+                        <Input
+                            id="edit-source"
+                            v-model="activeLead.source"
+                            class="col-span-3"
+                        />
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="edit-rating" class="text-right">Rating</Label>
+                        <Label for="edit-rating" class="text-right"
+                            >Rating</Label
+                        >
                         <div class="col-span-3">
                             <Select v-model="activeLead.rating">
                                 <SelectTrigger class="w-full">
-                                    <SelectValue placeholder="Select rating (optional)" />
+                                    <SelectValue
+                                        placeholder="Select rating (optional)"
+                                    />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem value="cold">Cold</SelectItem>
-                                        <SelectItem value="warm">Warm</SelectItem>
+                                        <SelectItem value="cold"
+                                            >Cold</SelectItem
+                                        >
+                                        <SelectItem value="warm"
+                                            >Warm</SelectItem
+                                        >
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
                         </div>
                     </div>
-                    <div class="grid grid-cols-4 items-center gap-4 text-xs text-muted-foreground">
+                    <div
+                        class="grid grid-cols-4 items-center gap-4 text-xs text-muted-foreground"
+                    >
                         <span class="text-right font-medium">Created</span>
-                        <span class="col-span-3 pl-1">{{ activeLead.date }}</span>
+                        <span class="col-span-3 pl-1">{{
+                            activeLead.date
+                        }}</span>
                     </div>
                 </div>
 
-                <DialogFooter class="flex sm:justify-between items-center w-full gap-2">
-                    <Button variant="destructive" class="gap-1.5 shrink-0" @click="deleteLead(activeLead.id)">
+                <DialogFooter
+                    class="flex w-full items-center gap-2 sm:justify-between"
+                >
+                    <Button
+                        variant="destructive"
+                        class="shrink-0 gap-1.5"
+                        @click="deleteLead(activeLead.id)"
+                    >
                         <Trash2 class="size-4" />
                         Delete
                     </Button>
-                    <div class="flex items-center gap-2 w-full justify-end">
-                        <Button variant="outline" @click="isDetailsOpen = false">Cancel</Button>
+                    <div class="flex w-full items-center justify-end gap-2">
+                        <Button variant="outline" @click="isDetailsOpen = false"
+                            >Cancel</Button
+                        >
                         <Button @click="saveLeadDetails">Save Changes</Button>
                     </div>
                 </DialogFooter>

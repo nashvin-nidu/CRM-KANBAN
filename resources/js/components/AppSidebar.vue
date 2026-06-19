@@ -31,12 +31,12 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Kanban',
         href: kanban(),
-        icon: KanbanIcon ,
+        icon: KanbanIcon,
     },
     {
         title: 'Integrations',
         href: integrations(),
-        icon: PlugZap  ,
+        icon: PlugZap,
     },
 ];
 </script>
