@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
+import axios from 'axios';
 import {
     Search,
     Plus,
@@ -73,320 +74,7 @@ interface Column {
     borderClass: string;
 }
 
-const LOCAL_STORAGE_KEY = 'crm_leads';
 
-const defaultLeads: Lead[] = [
-    {
-        id: 1,
-        name: 'Alice Smith',
-        email: 'alice@example.com',
-        company: 'Acme Corp',
-        status: 'New',
-        value: 12500,
-        source: 'Website',
-        date: (() => {
-            const d = new Date();
-            d.setDate(d.getDate() - 15);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'warm',
-    },
-    {
-        id: 2,
-        name: 'Bob Johnson',
-        email: 'bob@example.com',
-        company: 'Infinite Loop',
-        status: 'Contacted',
-        value: 45000,
-        source: 'Referral',
-        date: (() => {
-            const d = new Date();
-            d.setDate(d.getDate() - 2);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'cold',
-    },
-    {
-        id: 3,
-        name: 'Charlie Brown',
-        email: 'charlie@example.com',
-        company: 'Peanuts Inc',
-        status: 'Qualified',
-        value: 8000,
-        source: 'LinkedIn',
-        date: (() => {
-            const d = new Date();
-            d.setDate(d.getDate() - 1);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'warm',
-    },
-    {
-        id: 4,
-        name: 'Diana Prince',
-        email: 'diana@example.com',
-        company: 'Wayne Ent.',
-        status: 'Proposal Sent',
-        value: 95000,
-        source: 'Direct',
-        date: new Date().toISOString().split('T')[0],
-        rating: 'warm',
-    },
-    {
-        id: 5,
-        name: 'Ethan Hunt',
-        email: 'ethan@example.com',
-        company: 'IMF Agency',
-        status: 'Won',
-        value: 150000,
-        source: 'Referral',
-        date: (() => {
-            const d = new Date();
-            d.setMonth(d.getMonth() - 2);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'warm',
-    },
-    {
-        id: 6,
-        name: 'Fiona Gallagher',
-        email: 'fiona@example.com',
-        company: "Patsy's Pies",
-        status: 'Lost',
-        value: 3200,
-        source: 'Cold Call',
-        date: (() => {
-            const d = new Date();
-            d.setFullYear(d.getFullYear() - 1);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'cold',
-    },
-    {
-        id: 7,
-        name: 'George Clark',
-        email: 'george@example.com',
-        company: 'Nexus Ltd',
-        status: 'New',
-        value: 18000,
-        source: 'Website',
-        date: (() => {
-            const d = new Date();
-            d.setDate(d.getDate() - 4);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'cold',
-    },
-    {
-        id: 8,
-        name: 'Hannah Abbott',
-        email: 'hannah@example.com',
-        company: 'Apothecary Co',
-        status: 'Contacted',
-        value: 5200,
-        source: 'Inbound',
-        date: (() => {
-            const d = new Date();
-            d.setDate(d.getDate() - 3);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'warm',
-    },
-    {
-        id: 9,
-        name: 'Ian Malcolm',
-        email: 'ian@example.com',
-        company: 'InGen Bios',
-        status: 'Qualified',
-        value: 65000,
-        source: 'Conference',
-        date: (() => {
-            const d = new Date();
-            d.setDate(d.getDate() - 5);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'warm',
-    },
-    {
-        id: 10,
-        name: 'Julia Roberts',
-        email: 'julia@example.com',
-        company: 'Pretty Pics',
-        status: 'Proposal Sent',
-        value: 120000,
-        source: 'Referral',
-        date: (() => {
-            const d = new Date();
-            d.setDate(d.getDate() - 6);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'warm',
-    },
-    {
-        id: 11,
-        name: 'Kevin Bacon',
-        email: 'kevin@example.com',
-        company: 'Six Degrees',
-        status: 'Won',
-        value: 30000,
-        source: 'Direct',
-        date: (() => {
-            const d = new Date();
-            d.setDate(d.getDate() - 7);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'cold',
-    },
-    {
-        id: 12,
-        name: 'Laura Croft',
-        email: 'laura@example.com',
-        company: 'Tomb Explorer',
-        status: 'Lost',
-        value: 45000,
-        source: 'Cold Call',
-        date: (() => {
-            const d = new Date();
-            d.setDate(d.getDate() - 8);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'cold',
-    },
-    {
-        id: 13,
-        name: 'Bruce Wayne',
-        email: 'bruce@example.com',
-        company: 'Wayne Ent.',
-        status: 'New',
-        value: 500000,
-        source: 'Direct',
-        date: new Date().toISOString().split('T')[0],
-        rating: 'warm',
-    },
-    {
-        id: 14,
-        name: 'Clark Kent',
-        email: 'clark@example.com',
-        company: 'Daily Planet',
-        status: 'Contacted',
-        value: 15000,
-        source: 'Website',
-        date: (() => {
-            const d = new Date();
-            d.setDate(d.getDate() - 1);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'cold',
-    },
-    {
-        id: 15,
-        name: 'Peter Parker',
-        email: 'peter@example.com',
-        company: 'Daily Bugle',
-        status: 'Qualified',
-        value: 9000,
-        source: 'LinkedIn',
-        date: (() => {
-            const d = new Date();
-            d.setDate(d.getDate() - 2);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'warm',
-    },
-    {
-        id: 16,
-        name: 'Tony Stark',
-        email: 'tony@example.com',
-        company: 'Stark Ind.',
-        status: 'Proposal Sent',
-        value: 750000,
-        source: 'Referral',
-        date: (() => {
-            const d = new Date();
-            d.setDate(d.getDate() - 3);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'warm',
-    },
-    {
-        id: 17,
-        name: 'Natasha Romanoff',
-        email: 'natasha@example.com',
-        company: 'S.H.I.E.L.D.',
-        status: 'Won',
-        value: 110000,
-        source: 'Inbound',
-        date: (() => {
-            const d = new Date();
-            d.setDate(d.getDate() - 4);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'warm',
-    },
-    {
-        id: 18,
-        name: 'Steve Rogers',
-        email: 'steve@example.com',
-        company: 'Brooklyn Sp.',
-        status: 'New',
-        value: 25000,
-        source: 'Conference',
-        date: (() => {
-            const d = new Date();
-            d.setDate(d.getDate() - 10);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'cold',
-    },
-    {
-        id: 19,
-        name: 'Wanda Maximoff',
-        email: 'wanda@example.com',
-        company: 'Westview Co',
-        status: 'Qualified',
-        value: 85000,
-        source: 'Website',
-        date: (() => {
-            const d = new Date();
-            d.setDate(d.getDate() - 12);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'warm',
-    },
-    {
-        id: 20,
-        name: 'Barry Allen',
-        email: 'barry@example.com',
-        company: 'Star Labs',
-        status: 'Won',
-        value: 60000,
-        source: 'Referral',
-        date: (() => {
-            const d = new Date();
-            d.setDate(d.getDate() - 14);
-
-            return d.toISOString().split('T')[0];
-        })(),
-        rating: 'cold',
-    },
-];
 
 const searchQuery = ref('');
 const isSearchExpanded = ref(false);
@@ -476,47 +164,17 @@ const columns = ref<Column[]>([
     },
 ]);
 
-const loadLeads = (): Lead[] => {
-    if (typeof window === 'undefined') {
-        return defaultLeads;
-    }
-
-    const data = localStorage.getItem(LOCAL_STORAGE_KEY);
-
-    if (data) {
-        try {
-            return JSON.parse(data);
-        } catch (e) {
-            console.error('Failed to parse leads from localstorage:', e);
-        }
-    }
-
-    return defaultLeads;
-};
-
-const persistBoard = () => {
-    const flatLeads: Lead[] = [];
-    columns.value.forEach((col) => {
-        col.leads.forEach((lead) => {
-            lead.status = col.id;
-            flatLeads.push(lead);
+const initColumns = async () => {
+    try {
+        const response = await axios.get('/kanban/data');
+        const leads = response.data;
+        columns.value.forEach((col) => {
+            col.leads = leads.filter((l: Lead) => l.status === col.id);
         });
-    });
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(flatLeads));
-};
-
-const initColumns = () => {
-    let leads = loadLeads();
-
-    // Reset if it's the old 6-lead list or has static dates to seed the dynamic dates list
-    if (leads.length <= 6 || leads[0]?.date === '2026-06-05') {
-        leads = defaultLeads;
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(leads));
+    } catch (error) {
+        console.error('Failed to load leads:', error);
+        toast.error('Failed to load leads from the server.');
     }
-
-    columns.value.forEach((col) => {
-        col.leads = leads.filter((l) => l.status === col.id);
-    });
 };
 
 const { setOpen } = useSidebar();
@@ -530,14 +188,18 @@ onUnmounted(() => {
     setOpen(true);
 });
 
-const onDragChange = (evt: any, targetColumnId: Column['id']) => {
+const onDragChange = async (evt: any, targetColumnId: Column['id']) => {
     if (evt.added) {
         const lead = evt.added.element as Lead;
         lead.status = targetColumnId;
-        persistBoard();
-        toast.success(`Moved ${lead.name} to ${targetColumnId}`);
-    } else if (evt.removed || evt.moved) {
-        persistBoard();
+        try {
+            await axios.post('/kanban/update', lead);
+            toast.success(`Moved ${lead.name} to ${targetColumnId}`);
+        } catch (error) {
+            console.error('Failed to update lead status:', error);
+            toast.error('Failed to update lead position.');
+            initColumns();
+        }
     }
 };
 
@@ -658,7 +320,7 @@ const openAddDialog = (status: Column['id'] = 'New') => {
     isAddOpen.value = true;
 };
 
-const createLead = () => {
+const createLead = async () => {
     if (!newLead.value.name) {
         toast.error('Lead Name is required');
 
@@ -666,14 +328,7 @@ const createLead = () => {
     }
 
     const status = newLead.value.status || 'New';
-    const targetCol = columns.value.find((c) => c.id === status);
-
-    if (!targetCol) {
-        return;
-    }
-
-    const lead: Lead = {
-        id: Date.now(),
+    const leadPayload = {
         name: newLead.value.name,
         company: newLead.value.company || 'Unknown Inc.',
         email: newLead.value.email || '',
@@ -684,17 +339,24 @@ const createLead = () => {
         rating: newLead.value.rating,
     };
 
-    targetCol.leads.push(lead);
-    persistBoard();
-    toast.success(`Created Lead: ${lead.name}`);
-    isAddOpen.value = false;
+    try {
+        const response = await axios.post('/kanban/update', leadPayload);
+        if (response.data.success) {
+            toast.success(`Created Lead: ${response.data.lead.name}`);
+            isAddOpen.value = false;
+            initColumns();
+        }
+    } catch (error) {
+        console.error('Failed to create lead:', error);
+        toast.error('Failed to create lead on the server.');
+    }
 };
 const openDetailsDialog = (lead: Lead) => {
     activeLead.value = { ...lead };
     isDetailsOpen.value = true;
 };
 
-const saveLeadDetails = () => {
+const saveLeadDetails = async () => {
     if (!activeLead.value.name) {
         toast.error('Lead Name is required');
 
@@ -704,58 +366,31 @@ const saveLeadDetails = () => {
     const updated = { ...activeLead.value };
     updated.value = Number(updated.value) || 0;
 
-    let found = false;
-
-    for (const col of columns.value) {
-        const idx = col.leads.findIndex((l) => l.id === updated.id);
-
-        if (idx !== -1) {
-            if (col.id !== updated.status) {
-                // Remove from old column, push to target column
-                col.leads.splice(idx, 1);
-                const targetCol = columns.value.find(
-                    (c) => c.id === updated.status,
-                );
-
-                if (targetCol) {
-                    targetCol.leads.push(updated);
-                }
-            } else {
-                col.leads[idx] = updated;
-            }
-
-            found = true;
-            break;
+    try {
+        const response = await axios.post('/kanban/update', updated);
+        if (response.data.success) {
+            toast.success(`Updated Lead: ${updated.name}`);
+            isDetailsOpen.value = false;
+            initColumns();
         }
+    } catch (error) {
+        console.error('Failed to update lead details:', error);
+        toast.error('Failed to save lead details on the server.');
     }
-
-    if (found) {
-        persistBoard();
-        toast.success(`Updated Lead: ${updated.name}`);
-    }
-
-    isDetailsOpen.value = false;
 };
 
-const deleteLead = (id: number) => {
-    let deleted = false;
-
-    for (const col of columns.value) {
-        const idx = col.leads.findIndex((l) => l.id === id);
-
-        if (idx !== -1) {
-            col.leads.splice(idx, 1);
-            deleted = true;
-            break;
+const deleteLead = async (id: number) => {
+    try {
+        const response = await axios.delete(`/kanban/delete/${id}`);
+        if (response.data.success) {
+            toast.success('Lead deleted');
+            isDetailsOpen.value = false;
+            initColumns();
         }
+    } catch (error) {
+        console.error('Failed to delete lead:', error);
+        toast.error('Failed to delete lead from the server.');
     }
-
-    if (deleted) {
-        persistBoard();
-        toast.success('Lead deleted');
-    }
-
-    isDetailsOpen.value = false;
 };
 </script>
 
