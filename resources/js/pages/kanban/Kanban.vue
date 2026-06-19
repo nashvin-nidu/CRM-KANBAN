@@ -52,6 +52,7 @@ interface Lead {
     id: number;
     name: string;
     email: string;
+    phone?: string;
     company: string;
     status:
         | 'New'
@@ -101,6 +102,7 @@ const newLead = ref<Partial<Lead>>({
     name: '',
     company: '',
     email: '',
+    phone: '',
     value: 0,
     status: 'New',
     source: 'Website',
@@ -112,6 +114,7 @@ const activeLead = ref<Lead>({
     name: '',
     company: '',
     email: '',
+    phone: '',
     value: 0,
     status: 'New',
     source: 'Website',
@@ -188,18 +191,18 @@ onUnmounted(() => {
     setOpen(true);
 });
 
-const onDragChange = async (evt: any, targetColumnId: Column['id']) => {
-    if (evt.added) {
-        const lead = evt.added.element as Lead;
-        lead.status = targetColumnId;
-        try {
-            await axios.post('/kanban/update', lead);
-            toast.success(`Moved ${lead.name} to ${targetColumnId}`);
-        } catch (error) {
-            console.error('Failed to update lead status:', error);
-            toast.error('Failed to update lead position.');
-            initColumns();
-        }
+const onAdd = async (evt: any, targetColumnId: Column['id']) => {
+    const lead = evt.data as Lead;
+    if (!lead) return;
+
+    lead.status = targetColumnId;
+
+    try {
+        await axios.post('/kanban/update', lead);
+        toast.success(`Moved ${lead.name} to ${targetColumnId}`);
+    } catch (error: any) {
+        toast.error('Failed to update lead position.');
+        initColumns();
     }
 };
 
@@ -312,6 +315,7 @@ const openAddDialog = (status: Column['id'] = 'New') => {
         name: '',
         company: '',
         email: '',
+        phone: '',
         value: 0,
         status: status,
         source: 'Website',
@@ -332,6 +336,7 @@ const createLead = async () => {
         name: newLead.value.name,
         company: newLead.value.company || 'Unknown Inc.',
         email: newLead.value.email || '',
+        phone: newLead.value.phone || '',
         status: status,
         value: Number(newLead.value.value) || 0,
         source: newLead.value.source || 'Website',
@@ -563,7 +568,7 @@ const deleteLead = async (id: number) => {
                     ghost-class="opacity-40"
                     drag-class="cursor-grabbing"
                     class="custom-scrollbar flex flex-1 flex-col gap-2 overflow-y-auto p-2"
-                    @change="(evt) => onDragChange(evt, col.id)"
+                    @add="(evt) => onAdd(evt, col.id)"
                 >
                     <div
                         v-for="lead in col.leads"
@@ -687,6 +692,16 @@ const deleteLead = async (id: number) => {
                         />
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
+                        <Label for="phone" class="text-right">Phone</Label>
+                        <Input
+                            id="phone"
+                            v-model="newLead.phone"
+                            type="tel"
+                            placeholder="+91 99999 99999"
+                            class="col-span-3"
+                        />
+                    </div>
+                    <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="value" class="text-right">Value (₹)</Label>
                         <Input
                             id="value"
@@ -794,6 +809,15 @@ const deleteLead = async (id: number) => {
                             id="edit-email"
                             v-model="activeLead.email"
                             type="email"
+                            class="col-span-3"
+                        />
+                    </div>
+                    <div class="grid grid-cols-4 items-center gap-4">
+                        <Label for="edit-phone" class="text-right">Phone</Label>
+                        <Input
+                            id="edit-phone"
+                            v-model="activeLead.phone"
+                            type="tel"
                             class="col-span-3"
                         />
                     </div>

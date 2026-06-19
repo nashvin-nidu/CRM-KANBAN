@@ -10,7 +10,7 @@ import {
     PlugZap,
     Info,
 } from '@lucide/vue';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { defineComponent, h } from 'vue';
 import { toast } from 'vue-sonner';
 import { Button } from '@/components/ui/button';
@@ -213,6 +213,19 @@ const integrationsList = ref<Integration[]>([
     },
 ]);
 
+onMounted(() => {
+    const origin = window.location.origin;
+    integrationsList.value = integrationsList.value.map(item => {
+        if (item.webhookUrl) {
+            item.webhookUrl = item.webhookUrl.replace('https://api.crm-kanban.test', origin);
+        }
+        if (item.scriptCode) {
+            item.scriptCode = item.scriptCode.replace('https://api.crm-kanban.test', origin);
+        }
+        return item;
+    });
+});
+
 const activeIntegration = ref<Integration | null>(null);
 const isDialogOpen = ref(false);
 const copiedField = ref<string | null>(null);
@@ -223,21 +236,47 @@ const openConfig = (integration: Integration) => {
     copiedField.value = null;
 };
 
-const copyText = (text: string, fieldKey: string) => {
-    if (!navigator.clipboard) {
-        toast.error('Clipboard API not supported in this browser.');
-
-        return;
-    }
-
-    navigator.clipboard.writeText(text);
-    copiedField.value = fieldKey;
-    toast.success('Copied to clipboard!');
-    setTimeout(() => {
-        if (copiedField.value === fieldKey) {
-            copiedField.value = null;
+const fallbackCopy = (text: string, callback: () => void) => {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            callback();
+        } else {
+            toast.error('Failed to copy text.');
         }
-    }, 2000);
+    } catch (err) {
+        toast.error('Failed to copy text.');
+    }
+    document.body.removeChild(textArea);
+};
+
+const copyText = (text: string, fieldKey: string) => {
+    const handleSuccess = () => {
+        copiedField.value = fieldKey;
+        toast.success('Copied to clipboard!');
+        setTimeout(() => {
+            if (copiedField.value === fieldKey) {
+                copiedField.value = null;
+            }
+        }, 2000);
+    };
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text)
+            .then(handleSuccess)
+            .catch(() => {
+                fallbackCopy(text, handleSuccess);
+            });
+    } else {
+        fallbackCopy(text, handleSuccess);
+    }
 };
 </script>
 
