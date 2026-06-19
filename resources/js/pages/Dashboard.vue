@@ -564,54 +564,56 @@ const onConversionMouseMove = (event: MouseEvent) => {
 <template>
     <Head title="CRM Analytics Dashboard" />
 
-    <div class="flex flex-col gap-6 overflow-y-auto p-6 md:p-8 max-w-7xl mx-auto w-full">
+    <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-6">
         
         <!-- Header Section -->
-        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between shrink-0">
             <div>
                 <h1 class="text-3xl font-semibold tracking-tight text-foreground font-sans">
                     Sales Dashboard
                 </h1>
-                <p class="text-sm text-muted-foreground mt-1">
+                <p class="text-sm text-muted-foreground mt-1 max-w-xl">
                     Real-time performance, conversions, and intelligent assignment recommendations.
                 </p>
             </div>
             
             <!-- Filters -->
             <div class="flex flex-wrap items-center gap-3">
-                <div class="flex items-center gap-1 bg-card/60 backdrop-blur-xs border border-sidebar-border/80 rounded-md p-1">
-                    <Select v-model="dateFilter">
-                        <SelectTrigger class="h-8 border-0 bg-transparent text-xs w-28 focus:ring-0 focus:ring-offset-0">
-                            <Calendar class="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                <!-- Date Filter -->
+                <Select v-model="dateFilter">
+                    <SelectTrigger class="h-9 border border-sidebar-border bg-card/60 text-xs w-fit min-w-[140px] px-3 rounded-md shadow-2xs hover:bg-card/90 transition-colors flex items-center justify-between gap-2 focus:ring-0 focus:ring-offset-0">
+                        <div class="flex items-center gap-2">
+                            <Calendar class="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                             <SelectValue placeholder="All Time" />
-                        </SelectTrigger>
-                        <SelectContent class="text-xs">
-                            <SelectItem value="all">All Time</SelectItem>
-                            <SelectItem value="this-month">This Month</SelectItem>
-                            <SelectItem value="30d">Last 30 Days</SelectItem>
-                            <SelectItem value="90d">Last 90 Days</SelectItem>
-                        </SelectContent>
-                    </Select>
+                        </div>
+                    </SelectTrigger>
+                    <SelectContent class="text-xs">
+                        <SelectItem value="all">All Time</SelectItem>
+                        <SelectItem value="this-month">This Month</SelectItem>
+                        <SelectItem value="30d">Last 30 Days</SelectItem>
+                        <SelectItem value="90d">Last 90 Days</SelectItem>
+                    </SelectContent>
+                </Select>
 
-                    <div class="h-4 w-px bg-sidebar-border" v-if="availableSources.length > 1"></div>
-
-                    <Select v-model="sourceFilter" v-if="availableSources.length > 1">
-                        <SelectTrigger class="h-8 border-0 bg-transparent text-xs w-32 focus:ring-0 focus:ring-offset-0">
-                            <Filter class="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                <!-- Source Filter -->
+                <Select v-model="sourceFilter" v-if="availableSources.length > 1">
+                    <SelectTrigger class="h-9 border border-sidebar-border bg-card/60 text-xs w-fit min-w-[140px] px-3 rounded-md shadow-2xs hover:bg-card/90 transition-colors flex items-center justify-between gap-2 focus:ring-0 focus:ring-offset-0">
+                        <div class="flex items-center gap-2">
+                            <Filter class="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                             <SelectValue placeholder="All Sources" />
-                        </SelectTrigger>
-                        <SelectContent class="text-xs">
-                            <SelectItem value="all">All Sources</SelectItem>
-                            <SelectItem 
-                                v-for="source in availableSources.filter(s => s !== 'all')" 
-                                :key="source" 
-                                :value="source"
-                            >
-                                {{ source }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+                        </div>
+                    </SelectTrigger>
+                    <SelectContent class="text-xs">
+                        <SelectItem value="all">All Sources</SelectItem>
+                        <SelectItem 
+                            v-for="source in availableSources.filter(s => s !== 'all')" 
+                            :key="source" 
+                            :value="source"
+                        >
+                            {{ source }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
 
                 <Button size="sm" as-child class="text-xs font-medium shadow-2xs h-9 transition-transform active:scale-98">
                     <Link :href="kanban()">
