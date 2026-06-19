@@ -9,10 +9,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 
+use App\Http\Controllers\KanBanBoard;
+use App\Http\Controllers\Leads;
+
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('kanban', 'kanban/Kanban')->name('kanban');
-    Route::inertia('leads', 'leads/Leads')->name('leads');
+    Route::get('kanban', [KanBanBoard::class, 'index'])->name('kanban');
+    Route::get('kanban/data', [KanBanBoard::class, 'getLeads'])->name('kanban.data');
+    Route::post('kanban/update', [KanBanBoard::class, 'update'])->name('kanban.update');
+    Route::delete('kanban/delete/{lead}', [KanBanBoard::class, 'destroy'])->name('kanban.destroy');
+
+    Route::get('leads', [Leads::class, 'index'])->name('leads');
+    Route::post('leads/batch', [Leads::class, 'batchStore'])->name('leads.batch');
     Route::inertia('integrations', 'integrations/Integrations')->name('integrations');
 });
 
+use App\Http\Controllers\WebhookController;
+
+Route::post('v1/webhooks/twilio', [WebhookController::class, 'twilio']);
+Route::post('v1/webhooks/google-form', [WebhookController::class, 'googleForm']);
+Route::match(['get', 'post'], 'v1/webhooks/facebook', [WebhookController::class, 'facebook']);
+Route::match(['get', 'post'], 'v1/webhooks/instagram', [WebhookController::class, 'instagram']);
+
 require __DIR__ . '/settings.php';
+
