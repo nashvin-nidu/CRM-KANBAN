@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { Sun, Moon } from '@lucide/vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import type { BreadcrumbItem } from '@/types';
-import { Sun, Moon } from '@lucide/vue';
 import { useAppearance } from '@/composables/useAppearance';
+import type { BreadcrumbItem } from '@/types';
 
 withDefaults(
     defineProps<{
@@ -27,23 +27,33 @@ const { updateAppearance, resolvedAppearance } = useAppearance();
                 <Breadcrumbs :breadcrumbs="breadcrumbs" />
             </template>
         </div>
-        
+
         <!-- Theme Switcher -->
-        <div class="ml-auto flex items-center p-0.5 rounded-lg bg-muted/50 border border-sidebar-border">
-            <button 
-                class="px-2.5 py-1 text-xs font-medium rounded-md flex items-center gap-1.5 transition-colors cursor-pointer"
-                :class="[resolvedAppearance === 'light' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+        <div
+            class="ml-auto flex items-center rounded-lg border border-sidebar-border bg-muted/50 p-0.5"
+        >
+            <button
+                class="flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
+                :class="[
+                    resolvedAppearance === 'light'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground',
+                ]"
                 @click="updateAppearance('light')"
             >
-                <Sun class="w-3.5 h-3.5" />
+                <Sun class="h-3.5 w-3.5" />
                 Light
             </button>
-            <button 
-                class="px-2.5 py-1 text-xs font-medium rounded-md flex items-center gap-1.5 transition-colors cursor-pointer"
-                :class="[resolvedAppearance === 'dark' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+            <button
+                class="flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
+                :class="[
+                    resolvedAppearance === 'dark'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground',
+                ]"
                 @click="updateAppearance('dark')"
             >
-                <Moon class="w-3.5 h-3.5" />
+                <Moon class="h-3.5 w-3.5" />
                 Dark
             </button>
         </div>
