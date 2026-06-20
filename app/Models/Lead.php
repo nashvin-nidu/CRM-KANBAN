@@ -12,6 +12,8 @@ class Lead extends Model
 {
     use HasFactory;
 
+    protected $with = ['assignee'];
+
     protected function casts(): array
     {
         return [

@@ -41,9 +41,10 @@ defineOptions({
     },
 });
 
-// Receive leads collection from the controller
+// Receive leads collection and sales team from the controller
 const props = defineProps<{
     leads: any[];
+    salesTeam: any[];
 }>();
 
 // Filter states
@@ -227,21 +228,59 @@ const funnelStages = computed(() => {
     });
 });
 
-// Sales Team definitions
-const salesTeam = [
-    { name: 'Sarah Jenkins', role: 'Enterprise Account Executive', avatar: 'SJ', bg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' },
-    { name: 'Alex Rivera', role: 'Senior Mid-Market AE', avatar: 'AR', bg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
-    { name: 'Elena Rostova', role: 'Inbound Specialist', avatar: 'ER', bg: 'bg-violet-500/10 text-violet-600 dark:text-violet-400' },
-    { name: 'Marcus Chen', role: 'Outbound Specialist', avatar: 'MC', bg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' }
+// Helper to get initials for avatar
+const getInitials = (name: string) => {
+    return name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'US';
+};
+
+// Cycle of background colors for avatars
+const colors = [
+    'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+    'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+    'bg-violet-500/10 text-violet-600 dark:text-violet-400',
+    'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+    'bg-rose-500/10 text-rose-600 dark:text-rose-400',
+    'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400'
 ];
 
-// Leaderboard calculations
+const getUserBg = (userId: number) => {
+    return colors[userId % colors.length];
+};
+
+// Map of name -> title
+const roleTitles: Record<string, string> = {
+    'Sarah Jenkins': 'Enterprise Account Executive',
+    'Alex Rivera': 'Senior Mid-Market AE',
+    'Elena Rostova': 'Inbound Specialist',
+    'Marcus Chen': 'Outbound Specialist',
+};
+
+const getRoleTitle = (name: string, role: string) => {
+    if (roleTitles[name]) {
+        return roleTitles[name];
+    }
+    return role === 'admin' ? 'Administrator' : 'Sales Representative';
+};
+
+// Process salesTeam dynamically from database
+const salesTeam = computed(() => {
+    return (props.salesTeam || []).map(member => ({
+        id: member.id,
+        name: member.name,
+        email: member.email,
+        role: getRoleTitle(member.name, member.role),
+        avatar: getInitials(member.name),
+        bg: getUserBg(member.id)
+    }));
+});
+
+// Leaderboard calculations using database associations
 const teamPerformance = computed(() => {
     const list = filteredLeads.value;
 
-    const performance = salesTeam.map((member, idx) => {
-        // Allocate leads deterministically based on ID
-        const memberLeads = list.filter(l => (l.id % 4) === idx);
+    const performance = salesTeam.value.map((member) => {
+        // Filter leads assigned to this specific user ID
+        const memberLeads = list.filter(l => l.assigned_to === member.id);
 
         // Active Leads (New, Contacted, Qualified, Proposal Sent)
         const activeLeads = memberLeads.filter(l => l.status !== 'Won' && l.status !== 'Lost').length;
@@ -311,8 +350,7 @@ const recentActivities = computed(() => {
     });
 
     return list.slice(0, 5).map(lead => {
-        const salespersonIdx = lead.id % 4;
-        const salesperson = salesTeam[salespersonIdx];
+        const salesperson = lead.assignee || { name: 'Unassigned' };
         
         let type: 'create' | 'assign' | 'status' | 'won' = 'create';
         let title = '';

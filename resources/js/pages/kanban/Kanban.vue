@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import {
     Search,
@@ -10,7 +10,7 @@ import {
     GripVertical,
     ExternalLink,
 } from '@lucide/vue';
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
 import { toast } from 'vue-sonner';
 import { Badge } from '@/components/ui/badge';
@@ -65,6 +65,13 @@ interface Lead {
     source: string;
     date: string;
     rating?: 'cold' | 'warm';
+    assigned_to?: number | null;
+    assignee?: {
+        id: number;
+        name: string;
+        email: string;
+        role: string;
+    } | null;
 }
 
 interface Column {
@@ -208,6 +215,24 @@ const onAdd = async (evt: any, targetColumnId: Column['id']) => {
 
 const dateFilter = ref('all');
 const statusFilter = ref('all');
+const userFilter = ref('all');
+
+const page = usePage();
+const isAdmin = computed(() => {
+    return page.props.auth?.user?.role === 'admin';
+});
+
+const availableAssignees = computed(() => {
+    const assigneesMap = new Map();
+    columns.value.forEach((col) => {
+        col.leads.forEach((lead) => {
+            if (lead.assignee) {
+                assigneesMap.set(lead.assignee.id, lead.assignee);
+            }
+        });
+    });
+    return Array.from(assigneesMap.values());
+});
 
 const isSameDay = (d1: Date, d2: Date) => {
     return (
@@ -284,6 +309,13 @@ const matchesFilters = (lead: Lead) => {
             if (!isThisYear(leadDate, today)) {
                 return false;
             }
+        }
+    }
+
+    // 4. User Filter (Admin Only)
+    if (isAdmin.value && userFilter.value !== 'all') {
+        if (String(lead.assigned_to) !== userFilter.value) {
+            return false;
         }
     }
 
@@ -450,6 +482,24 @@ const deleteLead = async (id: number) => {
                     <X class="h-4 w-4" v-if="isSearchExpanded" />
                     <Search class="h-4 w-4" v-else />
                 </Button>
+
+                <!-- User Filter Dropdown (Admin Only) -->
+                <Select v-model="userFilter" v-if="isAdmin">
+                    <SelectTrigger class="h-9 w-36 text-xs">
+                        <SelectValue placeholder="All Executives" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all" class="text-xs">All Executives</SelectItem>
+                        <SelectItem
+                            v-for="user in availableAssignees"
+                            :key="user.id"
+                            :value="String(user.id)"
+                            class="text-xs"
+                        >
+                            {{ user.name }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
 
                 <!-- Date Filter Dropdown -->
                 <Select v-model="dateFilter">
