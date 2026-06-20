@@ -41,10 +41,11 @@ defineOptions({
     },
 });
 
-// Receive leads collection and sales team from the controller
+// Receive leads collection, sales team and activities from the controller
 const props = defineProps<{
     leads: any[];
     salesTeam: any[];
+    activities: any[];
 }>();
 
 // Filter states
@@ -370,65 +371,74 @@ const assignmentInsights = computed(() => {
     };
 });
 
-// Generate dynamic activity timeline from lead creation dates and statuses
+// Process database-logged activities to format relative times, icons and badges
 const recentActivities = computed(() => {
-    const list = [...displayLeads.value];
-    
-    // Sort leads by date descending
-    list.sort((a, b) => {
-        const dateA = new Date(a.date).getTime();
-        const dateB = new Date(b.date).getTime();
-        if (dateB !== dateA) return dateB - dateA;
-        return b.id - a.id;
-    });
-
-    return list.slice(0, 5).map(lead => {
-        const salesperson = lead.assignee || { name: 'Unassigned' };
+    return (props.activities || []).map(act => {
+        const lead = act.lead || {};
+        const user = act.user || { name: 'System' };
         
-        let type: 'create' | 'assign' | 'status' | 'won' = 'create';
-        let title = '';
-        let desc = '';
-        let color = '';
+        let title = 'Activity';
+        let desc = act.description;
+        let color = 'bg-gray-500/10 text-gray-600 dark:bg-gray-500/20 dark:text-gray-400';
+        let iconType: 'create' | 'assign' | 'status' | 'won' = 'create';
 
-        if (lead.status === 'Won') {
-            type = 'won';
-            title = 'Deal Won';
-            desc = `${salesperson.name} closed a ${formatCurrency(lead.value)} deal with ${lead.company}.`;
-            color = 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400';
-        } else if (lead.status === 'Proposal Sent') {
-            type = 'status';
-            title = 'Proposal Sent';
-            desc = `${salesperson.name} sent a proposal of ${formatCurrency(lead.value)} to ${lead.company}.`;
-            color = 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400';
-        } else if (lead.status === 'Qualified') {
-            type = 'status';
-            title = 'Lead Qualified';
-            desc = `${lead.name} from ${lead.company} was qualified by ${salesperson.name}.`;
-            color = 'bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400';
-        } else if (lead.status === 'Contacted') {
-            type = 'assign';
-            title = 'Contact Established';
-            desc = `${salesperson.name} contacted ${lead.name} at ${lead.company}.`;
-            color = 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400';
-        } else {
-            type = 'create';
-            title = 'Lead Created';
-            desc = `New lead ${lead.name} from ${lead.source} was assigned to ${salesperson.name}.`;
-            color = 'bg-gray-500/10 text-gray-600 dark:bg-gray-500/20 dark:text-gray-400';
+        switch (act.type) {
+            case 'create':
+                title = 'Lead Created';
+                color = 'bg-gray-500/10 text-gray-600 dark:bg-gray-500/20 dark:text-gray-400';
+                iconType = 'create';
+                break;
+            case 'status_change':
+                iconType = 'status';
+                if (lead.status === 'Won') {
+                    title = 'Deal Won';
+                    color = 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400';
+                    iconType = 'won';
+                } else if (lead.status === 'Proposal Sent') {
+                    title = 'Proposal Sent';
+                    color = 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400';
+                } else if (lead.status === 'Qualified') {
+                    title = 'Lead Qualified';
+                    color = 'bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400';
+                } else if (lead.status === 'Contacted') {
+                    title = 'Contact Established';
+                    color = 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400';
+                    iconType = 'assign';
+                } else {
+                    title = 'Stage Updated';
+                    color = 'bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400';
+                }
+                break;
+            case 'assign':
+                title = 'Assignee Updated';
+                color = 'bg-orange-500/10 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400';
+                iconType = 'assign';
+                break;
+            case 'value_change':
+                title = 'Value Updated';
+                color = 'bg-teal-500/10 text-teal-600 dark:bg-teal-500/20 dark:text-teal-400';
+                iconType = 'status';
+                break;
         }
 
-        const dateObj = new Date(lead.date);
+        const dateObj = new Date(act.created_at);
         const diffTime = Math.abs(new Date().getTime() - dateObj.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         
         let relativeTime = '';
-        if (diffDays <= 1) relativeTime = 'Today';
-        else if (diffDays === 2) relativeTime = 'Yesterday';
-        else relativeTime = `${diffDays} days ago`;
+        if (isNaN(dateObj.getTime())) {
+            relativeTime = 'Just now';
+        } else if (diffDays <= 1) {
+            relativeTime = 'Today';
+        } else if (diffDays === 2) {
+            relativeTime = 'Yesterday';
+        } else {
+            relativeTime = `${diffDays} days ago`;
+        }
 
         return {
-            id: lead.id,
-            type,
+            id: act.id,
+            type: iconType,
             title,
             desc,
             relativeTime,
