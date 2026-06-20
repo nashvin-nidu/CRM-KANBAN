@@ -91,6 +91,13 @@ class KanBanBoard extends Controller
      */
     public function destroy(Lead $lead): JsonResponse
     {
+        if (auth()->user()->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized action.',
+            ], 403);
+        }
+
         $lead->delete();
 
         return response()->json([

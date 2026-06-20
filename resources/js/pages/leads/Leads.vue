@@ -49,6 +49,13 @@ defineOptions({
     },
 });
 
+interface User {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+}
+
 interface Lead {
     id: number;
     name: string;
@@ -60,6 +67,8 @@ interface Lead {
     source: string;
     date: string;
     rating?: 'cold' | 'warm';
+    assigned_to?: number | null;
+    assignee?: User | null;
 }
 
 interface ValidationError {
@@ -76,6 +85,45 @@ const allLeads = ref(props.leads || []);
 const searchQuery = ref('');
 const statusFilter = ref('all');
 const dateFilter = ref('all');
+
+// Watch props.leads to keep in sync with Inertia reloads
+watch(
+    () => props.leads,
+    (newLeads) => {
+        allLeads.value = newLeads || [];
+    },
+    { deep: true }
+);
+
+const page = usePage();
+const isAdmin = computed(() => page.props.auth?.user?.role === 'admin');
+
+const getInitials = (name: string) => {
+    if (!name) return '';
+    return name
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+};
+
+const deleteLead = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this lead?')) {
+        return;
+    }
+    try {
+        const response = await axios.delete(`/kanban/delete/${id}`);
+        if (response.data.success) {
+            toast.success('Lead deleted successfully');
+            allLeads.value = allLeads.value.filter(l => l.id !== id);
+            router.reload({ only: ['leads'] });
+        }
+    } catch (error) {
+        console.error('Failed to delete lead:', error);
+        toast.error('Failed to delete lead.');
+    }
+};
 
 // Modals state
 const isAddOpen = ref(false);
@@ -486,51 +534,87 @@ const getStatusClass = (status: string) => {
             <div class="px-6">
                 <Table>
                     <TableHeader>
-                        <TableRow>
-                            <TableHead>Contact Name</TableHead>
-                            <TableHead>Company</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Phone</TableHead>
-                            <TableHead>Lead Source</TableHead>
-                            <TableHead>Value</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Created Date</TableHead>
+                        <TableRow class="hover:bg-transparent">
+                            <TableHead class="font-semibold">Contact Name</TableHead>
+                            <TableHead class="font-semibold">Company</TableHead>
+                            <TableHead class="font-semibold">Email</TableHead>
+                            <TableHead class="font-semibold">Phone</TableHead>
+                            <TableHead class="font-semibold">Lead Source</TableHead>
+                            <TableHead class="font-semibold">Value</TableHead>
+                            <TableHead class="font-semibold">Status</TableHead>
+                            <TableHead class="font-semibold">Created Date</TableHead>
+                            <TableHead v-if="isAdmin" class="font-semibold">Assignee</TableHead>
+                            <TableHead v-if="isAdmin" class="text-right font-semibold">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         <TableRow
                             v-for="lead in filteredLeads"
                             :key="lead.id"
-                            class="transition-colors hover:bg-muted/50"
+                            class="transition-colors hover:bg-muted/50 border-b border-border/40"
                         >
-                            <TableCell class="font-medium">{{ lead.name }}</TableCell>
-                            <TableCell>{{ lead.company }}</TableCell>
-                            <TableCell>
-                                <span v-if="lead.email" class="flex items-center gap-1.5 text-muted-foreground">
-                                    <Mail class="size-3.5" />
+                            <TableCell class="font-medium text-foreground py-3.5">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-semibold tracking-tight">{{ lead.name }}</span>
+                                    <Badge
+                                        v-if="lead.rating"
+                                        :class="lead.rating === 'warm' 
+                                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-transparent text-[10px] font-medium px-2 py-0.5' 
+                                            : 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-400 border-transparent text-[10px] font-medium px-2 py-0.5'"
+                                    >
+                                        {{ lead.rating }}
+                                    </Badge>
+                                </div>
+                            </TableCell>
+                            <TableCell class="text-muted-foreground text-sm py-3.5">{{ lead.company }}</TableCell>
+                            <TableCell class="py-3.5">
+                                <span v-if="lead.email" class="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Mail class="size-4 text-muted-foreground/60" />
                                     {{ lead.email }}
                                 </span>
-                                <span v-else class="text-muted-foreground/60 text-xs">—</span>
+                                <span v-else class="text-muted-foreground/40 text-xs">—</span>
                             </TableCell>
-                            <TableCell>
-                                <span v-if="lead.phone" class="text-muted-foreground">{{ lead.phone }}</span>
-                                <span v-else class="text-muted-foreground/60 text-xs">—</span>
+                            <TableCell class="py-3.5">
+                                <span v-if="lead.phone" class="text-sm text-muted-foreground font-mono">{{ lead.phone }}</span>
+                                <span v-else class="text-muted-foreground/40 text-xs">—</span>
                             </TableCell>
-                            <TableCell>{{ lead.source }}</TableCell>
-                            <TableCell class="font-semibold">{{ formatCurrency(lead.value) }}</TableCell>
-                            <TableCell>
+                            <TableCell class="text-muted-foreground text-sm py-3.5">{{ lead.source }}</TableCell>
+                            <TableCell class="font-semibold text-sm py-3.5 text-foreground">{{ formatCurrency(lead.value) }}</TableCell>
+                            <TableCell class="py-3.5">
                                 <Badge
                                     :variant="getStatusVariant(lead.status)"
-                                    :class="getStatusClass(lead.status)"
+                                    :class="[getStatusClass(lead.status), 'text-xs font-semibold px-2.5 py-1']"
                                 >
                                     {{ lead.status }}
                                 </Badge>
                             </TableCell>
-                            <TableCell class="text-muted-foreground">{{ lead.date }}</TableCell>
+                            <TableCell class="text-muted-foreground text-sm py-3.5">{{ lead.date }}</TableCell>
+                            <TableCell v-if="isAdmin" class="py-3.5">
+                                <div v-if="lead.assignee" class="flex items-center gap-2">
+                                    <Avatar class="size-7 border border-border/80">
+                                        <AvatarFallback class="bg-primary/10 text-primary text-[10px] font-bold">
+                                            {{ getInitials(lead.assignee.name) }}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <span class="text-sm font-semibold text-foreground/90">{{ lead.assignee.name }}</span>
+                                </div>
+                                <span v-else class="text-muted-foreground/40 text-xs">—</span>
+                            </TableCell>
+                            <TableCell v-if="isAdmin" class="text-right py-3.5">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    class="size-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                                    @click="deleteLead(lead.id)"
+                                >
+                                    <Trash2 class="size-4" />
+                                    <span class="sr-only">Delete</span>
+                                </Button>
+                            </TableCell>
                         </TableRow>
                         <TableRow v-if="filteredLeads.length === 0">
                             <TableCell
-                                colspan="8"
+                                :colspan="isAdmin ? 10 : 8"
                                 class="h-24 text-center text-muted-foreground"
                             >
                                 No leads found matching your search.
