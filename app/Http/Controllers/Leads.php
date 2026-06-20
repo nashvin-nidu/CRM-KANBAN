@@ -12,10 +12,16 @@ use Illuminate\Http\JsonResponse;
 
 class Leads extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $user = $request->user();
+        $query = Lead::orderBy('id', 'desc');
+        if ($user->role !== 'admin') {
+            $query->where('assigned_to', $user->id);
+        }
+
         return Inertia::render('leads/Leads', [
-            'leads' => Lead::orderBy('id', 'desc')->get(),
+            'leads' => $query->get(),
         ]);
     }
 
@@ -44,6 +50,9 @@ class Leads extends Controller
             }
 
             if (!$exists) {
+                if ($request->user()->role !== 'admin') {
+                    $leadData['assigned_to'] = $request->user()->id;
+                }
                 Lead::create($leadData);
                 $createdCount++;
             } else {
