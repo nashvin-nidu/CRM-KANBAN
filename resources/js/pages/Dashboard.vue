@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import {
     Users,
     Target,
@@ -50,6 +50,7 @@ const props = defineProps<{
 // Filter states
 const dateFilter = ref<'all' | '30d' | '90d' | 'this-month'>('all');
 const sourceFilter = ref<string>('all');
+const userFilter = ref<string>('all');
 
 // Extract unique sources for filter dropdown
 const availableSources = computed(() => {
@@ -99,9 +100,24 @@ const filteredLeads = computed(() => {
     return list;
 });
 
+const page = usePage();
+const isAdmin = computed(() => page.props.auth?.user?.role === 'admin');
+
+const displayLeads = computed(() => {
+    const list = filteredLeads.value;
+    const user = page.props.auth?.user;
+    if (user && user.role !== 'admin') {
+        return list.filter(l => l.assigned_to === user.id);
+    }
+    if (userFilter.value !== 'all') {
+        return list.filter(l => l.assigned_to === Number(userFilter.value));
+    }
+    return list;
+});
+
 // 4 top KPI cards calculations
 const kpis = computed(() => {
-    const list = filteredLeads.value;
+    const list = displayLeads.value;
 
     const totalLeads = list.length;
     const qualifiedLeads = list.filter(l => l.status === 'Qualified').length;
@@ -117,7 +133,7 @@ const kpis = computed(() => {
 });
 
 // Calculate percentages relative to prior month window (30d windows)
-const getTrend = (metric: 'total' | 'qualified' | 'won' | 'value') => {
+const trends = computed(() => {
     const now = new Date();
     let daysWindow = 30;
 
@@ -134,54 +150,71 @@ const getTrend = (metric: 'total' | 'qualified' | 'won' | 'value') => {
     const previousPeriodStart = new Date();
     previousPeriodStart.setDate(now.getDate() - (daysWindow * 2));
 
-    // Only slice by source if selected, not date
+    // Only slice by source/user
     let baseData = props.leads || [];
+    const user = page.props.auth?.user;
+    if (user && user.role !== 'admin') {
+        baseData = baseData.filter(l => l.assigned_to === user.id);
+    } else if (userFilter.value !== 'all') {
+        baseData = baseData.filter(l => l.assigned_to === Number(userFilter.value));
+    }
     if (sourceFilter.value !== 'all') {
         baseData = baseData.filter(l => l.source === sourceFilter.value);
     }
 
-    const currentLeads = baseData.filter(l => {
+    const currentLeads: any[] = [];
+    const previousLeads: any[] = [];
+
+    baseData.forEach(l => {
         const d = new Date(l.date);
-        return d >= currentPeriodStart && d <= now;
+        if (d >= currentPeriodStart && d <= now) {
+            currentLeads.push(l);
+        } else if (d >= previousPeriodStart && d < currentPeriodStart) {
+            previousLeads.push(l);
+        }
     });
 
-    const previousLeads = baseData.filter(l => {
-        const d = new Date(l.date);
-        return d >= previousPeriodStart && d < currentPeriodStart;
-    });
-
-    const getMetricVal = (leadsList: any[]) => {
-        if (metric === 'total') return leadsList.length;
-        if (metric === 'qualified') return leadsList.filter(l => l.status === 'Qualified').length;
-        if (metric === 'won') return leadsList.filter(l => l.status === 'Won').length;
-        if (metric === 'value') return leadsList.filter(l => l.status !== 'Lost').reduce((sum, l) => sum + (l.value || 0), 0);
-        return 0;
-    };
-
-    const currVal = getMetricVal(currentLeads);
-    const prevVal = getMetricVal(previousLeads);
-
-    if (prevVal === 0) {
-        return {
-            percent: currVal > 0 ? 100 : 0,
-            isPositive: currVal > 0,
-            formatted: currVal > 0 ? '+100%' : '0%'
+    const calculateTrend = (metric: 'total' | 'qualified' | 'won' | 'value') => {
+        const getMetricVal = (leadsList: any[]) => {
+            if (metric === 'total') return leadsList.length;
+            if (metric === 'qualified') return leadsList.filter(l => l.status === 'Qualified').length;
+            if (metric === 'won') return leadsList.filter(l => l.status === 'Won').length;
+            if (metric === 'value') return leadsList.filter(l => l.status !== 'Lost').reduce((sum, l) => sum + (l.value || 0), 0);
+            return 0;
         };
-    }
 
-    const diff = currVal - prevVal;
-    const percent = Math.round((diff / prevVal) * 100);
+        const currVal = getMetricVal(currentLeads);
+        const prevVal = getMetricVal(previousLeads);
+
+        if (prevVal === 0) {
+            return {
+                percent: currVal > 0 ? 100 : 0,
+                isPositive: currVal > 0,
+                formatted: currVal > 0 ? '+100%' : '0%'
+            };
+        }
+
+        const diff = currVal - prevVal;
+        const percent = Math.round((diff / prevVal) * 100);
+
+        return {
+            percent: Math.abs(percent),
+            isPositive: percent >= 0,
+            formatted: percent >= 0 ? `+${percent}%` : `${percent}%`
+        };
+    };
 
     return {
-        percent: Math.abs(percent),
-        isPositive: percent >= 0,
-        formatted: percent >= 0 ? `+${percent}%` : `${percent}%`
+        total: calculateTrend('total'),
+        qualified: calculateTrend('qualified'),
+        won: calculateTrend('won'),
+        value: calculateTrend('value')
     };
-};
+});
 
 // Funnel Calculations: Cumulative drop-off
 const funnelStages = computed(() => {
-    const list = filteredLeads.value;
+    const list = displayLeads.value;
 
     const stages = [
         { id: 'New', label: 'New', statusKey: 'New', color: 'bg-muted-foreground/30' },
@@ -339,7 +372,7 @@ const assignmentInsights = computed(() => {
 
 // Generate dynamic activity timeline from lead creation dates and statuses
 const recentActivities = computed(() => {
-    const list = [...filteredLeads.value];
+    const list = [...displayLeads.value];
     
     // Sort leads by date descending
     list.sort((a, b) => {
@@ -420,7 +453,7 @@ const last6Months = computed(() => {
 });
 
 const monthlyChartData = computed(() => {
-    const baseLeads = filteredLeads.value;
+    const baseLeads = displayLeads.value;
     const months = last6Months.value;
 
     return months.map(m => {
@@ -617,6 +650,26 @@ const onConversionMouseMove = (event: MouseEvent) => {
             
             <!-- Filters -->
             <div class="flex flex-wrap items-center gap-3">
+                <!-- User Filter (Admin Only) -->
+                <Select v-model="userFilter" v-if="isAdmin">
+                    <SelectTrigger class="h-9 border border-sidebar-border bg-card/60 text-xs w-fit min-w-[140px] px-3 rounded-md shadow-2xs hover:bg-card/90 transition-colors flex items-center justify-between gap-2 focus:ring-0 focus:ring-offset-0">
+                        <div class="flex items-center gap-2">
+                            <Users class="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            <SelectValue placeholder="All Executives" />
+                        </div>
+                    </SelectTrigger>
+                    <SelectContent class="text-xs">
+                        <SelectItem value="all">All Executives</SelectItem>
+                        <SelectItem
+                            v-for="user in salesTeam"
+                            :key="user.id"
+                            :value="String(user.id)"
+                        >
+                            {{ user.name }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+
                 <!-- Date Filter -->
                 <Select v-model="dateFilter">
                     <SelectTrigger class="h-9 border border-sidebar-border bg-card/60 text-xs w-fit min-w-[140px] px-3 rounded-md shadow-2xs hover:bg-card/90 transition-colors flex items-center justify-between gap-2 focus:ring-0 focus:ring-offset-0">
@@ -678,11 +731,11 @@ const onConversionMouseMove = (event: MouseEvent) => {
                     <div class="flex items-center gap-1.5 mt-2 text-2xs">
                         <span 
                             class="inline-flex items-center gap-0.5 rounded-sm px-1.5 py-0.5 font-bold"
-                            :class="[getTrend('total').isPositive ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive']"
+                            :class="[trends.total.isPositive ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive']"
                         >
-                            <TrendingUp class="h-3 w-3" v-if="getTrend('total').isPositive" />
+                            <TrendingUp class="h-3 w-3" v-if="trends.total.isPositive" />
                             <TrendingDown class="h-3 w-3" v-else />
-                            {{ getTrend('total').formatted }}
+                            {{ trends.total.formatted }}
                         </span>
                         <span class="text-muted-foreground font-medium">vs prior window</span>
                     </div>
@@ -702,11 +755,11 @@ const onConversionMouseMove = (event: MouseEvent) => {
                     <div class="flex items-center gap-1.5 mt-2 text-2xs">
                         <span 
                             class="inline-flex items-center gap-0.5 rounded-sm px-1.5 py-0.5 font-bold"
-                            :class="[getTrend('qualified').isPositive ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive']"
+                            :class="[trends.qualified.isPositive ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive']"
                         >
-                            <TrendingUp class="h-3 w-3" v-if="getTrend('qualified').isPositive" />
+                            <TrendingUp class="h-3 w-3" v-if="trends.qualified.isPositive" />
                             <TrendingDown class="h-3 w-3" v-else />
-                            {{ getTrend('qualified').formatted }}
+                            {{ trends.qualified.formatted }}
                         </span>
                         <span class="text-muted-foreground font-medium">vs prior window</span>
                     </div>
@@ -726,11 +779,11 @@ const onConversionMouseMove = (event: MouseEvent) => {
                     <div class="flex items-center gap-1.5 mt-2 text-2xs">
                         <span 
                             class="inline-flex items-center gap-0.5 rounded-sm px-1.5 py-0.5 font-bold"
-                            :class="[getTrend('won').isPositive ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive']"
+                            :class="[trends.won.isPositive ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive']"
                         >
-                            <TrendingUp class="h-3 w-3" v-if="getTrend('won').isPositive" />
+                            <TrendingUp class="h-3 w-3" v-if="trends.won.isPositive" />
                             <TrendingDown class="h-3 w-3" v-else />
-                            {{ getTrend('won').formatted }}
+                            {{ trends.won.formatted }}
                         </span>
                         <span class="text-muted-foreground font-medium">vs prior window</span>
                     </div>
@@ -750,11 +803,11 @@ const onConversionMouseMove = (event: MouseEvent) => {
                     <div class="flex items-center gap-1.5 mt-2 text-2xs">
                         <span 
                             class="inline-flex items-center gap-0.5 rounded-sm px-1.5 py-0.5 font-bold"
-                            :class="[getTrend('value').isPositive ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive']"
+                            :class="[trends.value.isPositive ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive']"
                         >
-                            <TrendingUp class="h-3 w-3" v-if="getTrend('value').isPositive" />
+                            <TrendingUp class="h-3 w-3" v-if="trends.value.isPositive" />
                             <TrendingDown class="h-3 w-3" v-else />
-                            {{ getTrend('value').formatted }}
+                            {{ trends.value.formatted }}
                         </span>
                         <span class="text-muted-foreground font-medium">vs prior window</span>
                     </div>

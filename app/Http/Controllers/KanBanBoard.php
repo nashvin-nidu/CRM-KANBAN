@@ -21,9 +21,13 @@ class KanBanBoard extends Controller
     /**
      * Get all leads from database.
      */
-    public function getLeads(): JsonResponse
+    public function getLeads(Request $request): JsonResponse
     {
-        return response()->json(Lead::all());
+        $user = $request->user();
+        if ($user->role === 'admin') {
+            return response()->json(Lead::all());
+        }
+        return response()->json(Lead::where('assigned_to', $user->id)->get());
     }
 
     /**
@@ -42,6 +46,7 @@ class KanBanBoard extends Controller
             'source' => 'nullable|string',
             'date' => 'required|date_format:Y-m-d',
             'rating' => 'nullable|string',
+            'assigned_to' => 'nullable|integer|exists:users,id',
         ]);
 
         $lead = null;
@@ -63,6 +68,9 @@ class KanBanBoard extends Controller
             }
 
             if (!$exists) {
+                if ($request->user()->role !== 'admin') {
+                    $validated['assigned_to'] = $request->user()->id;
+                }
                 $lead = Lead::create($validated);
             } else {
                 return response()->json([
