@@ -222,12 +222,14 @@ onMounted(() => {
                 origin,
             );
         }
+
         if (item.scriptCode) {
             item.scriptCode = item.scriptCode.replace(
                 'https://api.crm-kanban.test',
                 origin,
             );
         }
+
         return item;
     });
 });
@@ -250,16 +252,19 @@ const fallbackCopy = (text: string, callback: () => void) => {
     document.body.appendChild(textArea);
     textArea.focus();
     textArea.select();
+
     try {
         const successful = document.execCommand('copy');
+
         if (successful) {
             callback();
         } else {
             toast.error('Failed to copy text.');
         }
-    } catch (err) {
+    } catch {
         toast.error('Failed to copy text.');
     }
+
     document.body.removeChild(textArea);
 };
 

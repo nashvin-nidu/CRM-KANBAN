@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Head, usePage } from '@inertiajs/vue3';
-import axios from 'axios';
 import {
     Search,
     Plus,
@@ -10,6 +9,7 @@ import {
     GripVertical,
     ExternalLink,
 } from '@lucide/vue';
+import axios from 'axios';
 import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
 import { toast } from 'vue-sonner';
@@ -198,14 +198,17 @@ onUnmounted(() => {
 
 const onAdd = async (evt: any, targetColumnId: Column['id']) => {
     const lead = evt.data as Lead;
-    if (!lead) return;
+
+    if (!lead) {
+return;
+}
 
     lead.status = targetColumnId;
 
     try {
         await axios.post('/kanban/update', lead);
         toast.success(`Moved ${lead.name} to ${targetColumnId}`);
-    } catch (error: any) {
+    } catch {
         toast.error('Failed to update lead position.');
         initColumns();
     }
@@ -229,6 +232,7 @@ const availableAssignees = computed(() => {
             }
         });
     });
+
     return Array.from(assigneesMap.values());
 });
 
@@ -376,6 +380,7 @@ const createLead = async () => {
 
     try {
         const response = await axios.post('/kanban/update', leadPayload);
+
         if (response.data.success) {
             toast.success(`Created Lead: ${response.data.lead.name}`);
             isAddOpen.value = false;
@@ -403,6 +408,7 @@ const saveLeadDetails = async () => {
 
     try {
         const response = await axios.post('/kanban/update', updated);
+
         if (response.data.success) {
             toast.success(`Updated Lead: ${updated.name}`);
             isDetailsOpen.value = false;
@@ -417,6 +423,7 @@ const saveLeadDetails = async () => {
 const deleteLead = async (id: number) => {
     try {
         const response = await axios.delete(`/kanban/delete/${id}`);
+
         if (response.data.success) {
             toast.success('Lead deleted');
             isDetailsOpen.value = false;

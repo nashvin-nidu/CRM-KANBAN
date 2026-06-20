@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
 import { router, usePage, Head } from '@inertiajs/vue3';
+import { onMounted } from 'vue';
 import { kanban, login } from '@/routes';
 
 const page = usePage();

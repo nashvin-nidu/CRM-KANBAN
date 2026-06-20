@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import {
     Users,
@@ -18,11 +17,11 @@ import {
     UserCheck,
     LineChart as LineIcon,
     BarChart3 as BarIcon,
-    AlertCircle,
     ChevronRight,
-    TrendingUp as TrendUpIcon,
 } from '@lucide/vue';
-import { dashboard, kanban } from '@/routes';
+import { ref, computed } from 'vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardHeader,
@@ -30,7 +29,6 @@ import {
     CardDescription,
     CardContent,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import {
     Select,
     SelectContent,
@@ -38,8 +36,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { dashboard, kanban } from '@/routes';
 
 // Define breadcrumbs for the main AppLayout
 defineOptions({
@@ -68,6 +65,7 @@ const userFilter = ref<string>('all');
 // Extract unique sources for filter dropdown
 const availableSources = computed(() => {
     const sources = props.leads.map((l) => l.source).filter(Boolean);
+
     return ['all', ...new Set(sources)];
 });
 
@@ -98,6 +96,7 @@ const filteredLeads = computed(() => {
     if (dateFilter.value !== 'all') {
         const now = new Date();
         const cutoff = new Date();
+
         if (dateFilter.value === '30d') {
             cutoff.setDate(now.getDate() - 30);
             list = list.filter((l) => new Date(l.date) >= cutoff);
@@ -119,12 +118,15 @@ const isAdmin = computed(() => page.props.auth?.user?.role === 'admin');
 const displayLeads = computed(() => {
     const list = filteredLeads.value;
     const user = page.props.auth?.user;
+
     if (user && user.role !== 'admin') {
         return list.filter((l) => l.assigned_to === user.id);
     }
+
     if (userFilter.value !== 'all') {
         return list.filter((l) => l.assigned_to === Number(userFilter.value));
     }
+
     return list;
 });
 
@@ -152,13 +154,17 @@ const trends = computed(() => {
     const now = new Date();
     let daysWindow = 30;
 
-    if (dateFilter.value === '90d') daysWindow = 90;
-    else if (dateFilter.value === 'this-month') {
+    if (dateFilter.value === '90d') {
+daysWindow = 90;
+} else if (dateFilter.value === 'this-month') {
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         daysWindow = Math.ceil(
             (now.getTime() - startOfMonth.getTime()) / (1000 * 60 * 60 * 24),
         );
-        if (daysWindow <= 0) daysWindow = 30;
+
+        if (daysWindow <= 0) {
+daysWindow = 30;
+}
     }
 
     const currentPeriodStart = new Date();
@@ -170,6 +176,7 @@ const trends = computed(() => {
     // Only slice by source/user
     let baseData = props.leads || [];
     const user = page.props.auth?.user;
+
     if (user && user.role !== 'admin') {
         baseData = baseData.filter((l) => l.assigned_to === user.id);
     } else if (userFilter.value !== 'all') {
@@ -177,6 +184,7 @@ const trends = computed(() => {
             (l) => l.assigned_to === Number(userFilter.value),
         );
     }
+
     if (sourceFilter.value !== 'all') {
         baseData = baseData.filter((l) => l.source === sourceFilter.value);
     }
@@ -186,6 +194,7 @@ const trends = computed(() => {
 
     baseData.forEach((l) => {
         const d = new Date(l.date);
+
         if (d >= currentPeriodStart && d <= now) {
             currentLeads.push(l);
         } else if (d >= previousPeriodStart && d < currentPeriodStart) {
@@ -197,15 +206,24 @@ const trends = computed(() => {
         metric: 'total' | 'qualified' | 'won' | 'value',
     ) => {
         const getMetricVal = (leadsList: any[]) => {
-            if (metric === 'total') return leadsList.length;
-            if (metric === 'qualified')
-                return leadsList.filter((l) => l.status === 'Qualified').length;
-            if (metric === 'won')
-                return leadsList.filter((l) => l.status === 'Won').length;
-            if (metric === 'value')
-                return leadsList
+            if (metric === 'total') {
+return leadsList.length;
+}
+
+            if (metric === 'qualified') {
+return leadsList.filter((l) => l.status === 'Qualified').length;
+}
+
+            if (metric === 'won') {
+return leadsList.filter((l) => l.status === 'Won').length;
+}
+
+            if (metric === 'value') {
+return leadsList
                     .filter((l) => l.status !== 'Lost')
                     .reduce((sum, l) => sum + (l.value || 0), 0);
+}
+
             return 0;
         };
 
@@ -271,11 +289,26 @@ const funnelStages = computed(() => {
     ];
 
     const getStageIndex = (status: string) => {
-        if (status === 'New') return 0;
-        if (status === 'Contacted') return 1;
-        if (status === 'Qualified') return 2;
-        if (status === 'Proposal Sent') return 3;
-        if (status === 'Won') return 4;
+        if (status === 'New') {
+return 0;
+}
+
+        if (status === 'Contacted') {
+return 1;
+}
+
+        if (status === 'Qualified') {
+return 2;
+}
+
+        if (status === 'Proposal Sent') {
+return 3;
+}
+
+        if (status === 'Won') {
+return 4;
+}
+
         return -1; // Lost
     };
 
@@ -283,6 +316,7 @@ const funnelStages = computed(() => {
         // A lead is counted in this stage if it reached this stage index or beyond (won/proposal sent have passed contacted/qualified)
         const cumulativeLeads = list.filter((l) => {
             const lIdx = getStageIndex(l.status);
+
             return lIdx >= idx;
         });
 
@@ -301,11 +335,12 @@ const funnelStages = computed(() => {
 
     const firstStageCount = stageCounts[0]?.count || 1;
 
-    return stageCounts.map((s, idx) => {
+    return stageCounts.map((s) => {
         const rate =
             firstStageCount > 0
                 ? Math.round((s.count / firstStageCount) * 100)
                 : 0;
+
         return {
             ...s,
             conversionRate: rate,
@@ -351,6 +386,7 @@ const getRoleTitle = (name: string, role: string) => {
     if (roleTitles[name]) {
         return roleTitles[name];
     }
+
     return role === 'admin' ? 'Administrator' : 'Sales Representative';
 };
 
@@ -411,7 +447,10 @@ const topPerformer = computed(() => {
 // Smart Assignment Insights
 const assignmentInsights = computed(() => {
     const list = teamPerformance.value;
-    if (list.length === 0) return null;
+
+    if (list.length === 0) {
+return null;
+}
 
     // Lowest active workload
     const lowestWorkload = [...list].sort(
@@ -428,6 +467,7 @@ const assignmentInsights = computed(() => {
         if (a.activeLeads !== b.activeLeads) {
             return a.activeLeads - b.activeLeads;
         }
+
         return b.conversionRate - a.conversionRate;
     })[0];
 
@@ -442,10 +482,9 @@ const assignmentInsights = computed(() => {
 const recentActivities = computed(() => {
     return (props.activities || []).map((act) => {
         const lead = act.lead || {};
-        const user = act.user || { name: 'System' };
 
         let title = 'Activity';
-        let desc = act.description;
+        const desc = act.description;
         let color =
             'bg-gray-500/10 text-gray-600 dark:bg-gray-500/20 dark:text-gray-400';
         let iconType: 'create' | 'assign' | 'status' | 'won' = 'create';
@@ -459,6 +498,7 @@ const recentActivities = computed(() => {
                 break;
             case 'status_change':
                 iconType = 'status';
+
                 if (lead.status === 'Won') {
                     title = 'Deal Won';
                     color =
@@ -482,6 +522,7 @@ const recentActivities = computed(() => {
                     color =
                         'bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400';
                 }
+
                 break;
             case 'assign':
                 title = 'Assignee Updated';
@@ -502,6 +543,7 @@ const recentActivities = computed(() => {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         let relativeTime = '';
+
         if (isNaN(dateObj.getTime())) {
             relativeTime = 'Just now';
         } else if (diffDays <= 1) {
@@ -527,6 +569,7 @@ const recentActivities = computed(() => {
 const last6Months = computed(() => {
     const list = [];
     const now = new Date();
+
     for (let i = 5; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
         list.push({
@@ -535,6 +578,7 @@ const last6Months = computed(() => {
             monthIndex: d.getMonth(),
         });
     }
+
     return list;
 });
 
@@ -545,6 +589,7 @@ const monthlyChartData = computed(() => {
     return months.map((m) => {
         const monthLeads = baseLeads.filter((l) => {
             const d = new Date(l.date);
+
             return d.getFullYear() === m.year && d.getMonth() === m.monthIndex;
         });
 
@@ -586,6 +631,7 @@ const revenueChartSvg = computed(() => {
     const points = data.map((d, idx) => {
         const x = paddingLeft + idx * (chartWidth / (data.length - 1 || 1));
         const y = height - paddingBottom - (d.revenue / maxVal) * chartHeight;
+
         return { x, y, value: d.revenue, label: d.label };
     });
 
@@ -594,6 +640,7 @@ const revenueChartSvg = computed(() => {
 
     if (points.length > 0) {
         linePath = `M ${points[0].x} ${points[0].y}`;
+
         for (let i = 1; i < points.length; i++) {
             const prev = points[i - 1];
             const curr = points[i];
@@ -603,6 +650,7 @@ const revenueChartSvg = computed(() => {
             const cp2y = curr.y;
             linePath += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${curr.x} ${curr.y}`;
         }
+
         areaPath =
             linePath +
             ` L ${points[points.length - 1].x} ${height - paddingBottom} L ${points[0].x} ${height - paddingBottom} Z`;
@@ -631,13 +679,17 @@ const onRevenueMouseMove = (event: MouseEvent) => {
     const svgX = (clientX / rect.width) * 500;
 
     const pts = revenueChartSvg.value.points;
-    if (pts.length === 0) return;
+
+    if (pts.length === 0) {
+return;
+}
 
     let closestIdx = 0;
     let minDist = Math.abs(pts[0].x - svgX);
 
     for (let i = 1; i < pts.length; i++) {
         const dist = Math.abs(pts[i].x - svgX);
+
         if (dist < minDist) {
             minDist = dist;
             closestIdx = i;
@@ -707,7 +759,10 @@ const onConversionMouseMove = (event: MouseEvent) => {
     const svgX = (clientX / rect.width) * 500;
 
     const bars = conversionChartSvg.value.bars;
-    if (bars.length === 0) return;
+
+    if (bars.length === 0) {
+return;
+}
 
     let closestIdx = 0;
     let minDist = Math.abs(bars[0].x + bars[0].width / 2 - svgX);
@@ -715,6 +770,7 @@ const onConversionMouseMove = (event: MouseEvent) => {
     for (let i = 1; i < bars.length; i++) {
         const center = bars[i].x + bars[i].width / 2;
         const dist = Math.abs(center - svgX);
+
         if (dist < minDist) {
             minDist = dist;
             closestIdx = i;

@@ -1,25 +1,15 @@
 <script setup lang="ts">
 import { Head, router, usePage } from '@inertiajs/vue3';
-import { Search, Plus, Mail, Upload, Briefcase, Trash2 } from '@lucide/vue';
-import { ref, computed, watch } from 'vue';
+import { Search, Plus, Mail, Upload, Trash2 } from '@lucide/vue';
 import axios from 'axios';
-import * as XLSX from 'xlsx';
+import { ref, computed, watch } from 'vue';
 import { toast } from 'vue-sonner';
+import * as XLSX from 'xlsx';
 
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import {
     Dialog,
     DialogContent,
@@ -28,22 +18,31 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
-    SelectGroup,
     SelectItem,
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { leads } from '@/routes';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { leads as leadsRoute } from '@/routes';
 
 defineOptions({
     layout: {
         breadcrumbs: [
             {
                 title: 'Leads',
-                href: leads(),
+                href: leadsRoute(),
             },
         ],
     },
@@ -99,7 +98,10 @@ const page = usePage();
 const isAdmin = computed(() => page.props.auth?.user?.role === 'admin');
 
 const getInitials = (name: string) => {
-    if (!name) return '';
+    if (!name) {
+return '';
+}
+
     return name
         .split(' ')
         .map((n) => n[0])
@@ -112,8 +114,10 @@ const deleteLead = async (id: number) => {
     if (!confirm('Are you sure you want to delete this lead?')) {
         return;
     }
+
     try {
         const response = await axios.delete(`/kanban/delete/${id}`);
+
         if (response.data.success) {
             toast.success('Lead deleted successfully');
             allLeads.value = allLeads.value.filter((l) => l.id !== id);
@@ -249,6 +253,7 @@ const openAddDialog = () => {
 const createLead = async () => {
     if (!newLead.value.name) {
         toast.error('Lead Name is required');
+
         return;
     }
 
@@ -266,6 +271,7 @@ const createLead = async () => {
 
     try {
         const response = await axios.post('/kanban/update', leadPayload);
+
         if (response.data.success) {
             toast.success(`Created Lead: ${response.data.lead.name}`);
             isAddOpen.value = false;
@@ -287,7 +293,10 @@ const openImportDialog = () => {
 const handleFileSelect = (event: Event) => {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
-    if (!file) return;
+
+    if (!file) {
+return;
+}
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -335,36 +344,44 @@ const validateImportData = (rawRows: any[]) => {
         // 1. Validate Name
         if (!name || String(name).trim() === '') {
             invalid.push({ row: rowNum, error: 'Name is required' });
+
             return;
         }
 
         // Validate Phone
         const phoneStr = phone ? String(phone).trim() : '';
+
         if (!phoneStr) {
             invalid.push({ row: rowNum, error: 'Phone number is required' });
+
             return;
         }
 
         // 2. Validate Email format
         const emailStr = email ? String(email).trim() : '';
+
         if (emailStr) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
             if (!emailRegex.test(emailStr)) {
                 invalid.push({
                     row: rowNum,
                     error: `Invalid email format: "${emailStr}"`,
                 });
+
                 return;
             }
         }
 
         // 3. Validate Value
         const valNum = Number(value);
+
         if (isNaN(valNum)) {
             invalid.push({
                 row: rowNum,
                 error: `Value must be a number: "${value}"`,
             });
+
             return;
         }
 
@@ -385,12 +402,16 @@ const validateImportData = (rawRows: any[]) => {
 
         // 5. Validate Date (YYYY-MM-DD)
         let dateStr = String(date).trim();
+
         if (dateStr.includes('T')) {
             dateStr = dateStr.split('T')[0];
         }
+
         const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+
         if (!dateRegex.test(dateStr)) {
             const parsedDate = new Date(dateStr);
+
             if (!isNaN(parsedDate.getTime())) {
                 dateStr = parsedDate.toISOString().split('T')[0];
             } else {
@@ -398,19 +419,22 @@ const validateImportData = (rawRows: any[]) => {
                     row: rowNum,
                     error: `Invalid date format: "${dateStr}". Use YYYY-MM-DD.`,
                 });
+
                 return;
             }
         }
 
         // 6. Validate Rating
-        let ratingStr = rating
+        const ratingStr = rating
             ? String(rating).trim().toLowerCase()
             : undefined;
+
         if (ratingStr && ratingStr !== 'warm' && ratingStr !== 'cold') {
             invalid.push({
                 row: rowNum,
                 error: `Rating must be 'warm' or 'cold': "${rating}"`,
             });
+
             return;
         }
 
@@ -432,12 +456,15 @@ const validateImportData = (rawRows: any[]) => {
 };
 
 const uploadLeads = async () => {
-    if (!validLeads.value || validLeads.value.length === 0) return;
+    if (!validLeads.value || validLeads.value.length === 0) {
+return;
+}
 
     try {
         const response = await axios.post('/leads/batch', {
             leads: validLeads.value,
         });
+
         if (response.data.success) {
             toast.success(
                 `Imported ${response.data.created} leads. Skipped ${response.data.skipped} duplicates.`,
