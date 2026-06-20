@@ -92,7 +92,7 @@ watch(
     (newLeads) => {
         allLeads.value = newLeads || [];
     },
-    { deep: true }
+    { deep: true },
 );
 
 const page = usePage();
@@ -102,7 +102,7 @@ const getInitials = (name: string) => {
     if (!name) return '';
     return name
         .split(' ')
-        .map(n => n[0])
+        .map((n) => n[0])
         .join('')
         .toUpperCase()
         .slice(0, 2);
@@ -116,7 +116,7 @@ const deleteLead = async (id: number) => {
         const response = await axios.delete(`/kanban/delete/${id}`);
         if (response.data.success) {
             toast.success('Lead deleted successfully');
-            allLeads.value = allLeads.value.filter(l => l.id !== id);
+            allLeads.value = allLeads.value.filter((l) => l.id !== id);
             router.reload({ only: ['leads'] });
         }
     } catch (error) {
@@ -301,7 +301,9 @@ const handleFileSelect = (event: Event) => {
             validateImportData(json);
         } catch (err) {
             console.error('Error reading file:', err);
-            toast.error('Failed to read file. Please verify CSV or Excel format.');
+            toast.error(
+                'Failed to read file. Please verify CSV or Excel format.',
+            );
         }
     };
     reader.readAsArrayBuffer(file);
@@ -313,14 +315,21 @@ const validateImportData = (rawRows: any[]) => {
 
     rawRows.forEach((row, index) => {
         const rowNum = index + 2; // Rows start at 2 (headers are row 1)
-        const name = row.Name || row.name || row['Lead Name'] || row['Contact Name'];
+        const name =
+            row.Name || row.name || row['Lead Name'] || row['Contact Name'];
         const email = row.Email || row.email;
         const phone = row.Phone || row.phone || row['Phone Number'];
         const company = row.Company || row.company;
         const value = row.Value || row.value || 0;
-        const status = row.Status || row.status || row.Stage || row.stage || 'New';
-        const source = row.Source || row.source || row['Lead Source'] || 'Website';
-        const date = row.Date || row.date || row['Created Date'] || new Date().toISOString().split('T')[0];
+        const status =
+            row.Status || row.status || row.Stage || row.stage || 'New';
+        const source =
+            row.Source || row.source || row['Lead Source'] || 'Website';
+        const date =
+            row.Date ||
+            row.date ||
+            row['Created Date'] ||
+            new Date().toISOString().split('T')[0];
         const rating = row.Rating || row.rating;
 
         // 1. Validate Name
@@ -341,7 +350,10 @@ const validateImportData = (rawRows: any[]) => {
         if (emailStr) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(emailStr)) {
-                invalid.push({ row: rowNum, error: `Invalid email format: "${emailStr}"` });
+                invalid.push({
+                    row: rowNum,
+                    error: `Invalid email format: "${emailStr}"`,
+                });
                 return;
             }
         }
@@ -349,14 +361,27 @@ const validateImportData = (rawRows: any[]) => {
         // 3. Validate Value
         const valNum = Number(value);
         if (isNaN(valNum)) {
-            invalid.push({ row: rowNum, error: `Value must be a number: "${value}"` });
+            invalid.push({
+                row: rowNum,
+                error: `Value must be a number: "${value}"`,
+            });
             return;
         }
 
         // 4. Validate Status/Stage
-        const validStatuses = ['New', 'Contacted', 'Qualified', 'Proposal Sent', 'Won', 'Lost'];
+        const validStatuses = [
+            'New',
+            'Contacted',
+            'Qualified',
+            'Proposal Sent',
+            'Won',
+            'Lost',
+        ];
         const statusStr = String(status).trim();
-        const matchedStatus = validStatuses.find(s => s.toLowerCase() === statusStr.toLowerCase()) || 'New';
+        const matchedStatus =
+            validStatuses.find(
+                (s) => s.toLowerCase() === statusStr.toLowerCase(),
+            ) || 'New';
 
         // 5. Validate Date (YYYY-MM-DD)
         let dateStr = String(date).trim();
@@ -369,15 +394,23 @@ const validateImportData = (rawRows: any[]) => {
             if (!isNaN(parsedDate.getTime())) {
                 dateStr = parsedDate.toISOString().split('T')[0];
             } else {
-                invalid.push({ row: rowNum, error: `Invalid date format: "${dateStr}". Use YYYY-MM-DD.` });
+                invalid.push({
+                    row: rowNum,
+                    error: `Invalid date format: "${dateStr}". Use YYYY-MM-DD.`,
+                });
                 return;
             }
         }
 
         // 6. Validate Rating
-        let ratingStr = rating ? String(rating).trim().toLowerCase() : undefined;
+        let ratingStr = rating
+            ? String(rating).trim().toLowerCase()
+            : undefined;
         if (ratingStr && ratingStr !== 'warm' && ratingStr !== 'cold') {
-            invalid.push({ row: rowNum, error: `Rating must be 'warm' or 'cold': "${rating}"` });
+            invalid.push({
+                row: rowNum,
+                error: `Rating must be 'warm' or 'cold': "${rating}"`,
+            });
             return;
         }
 
@@ -390,7 +423,7 @@ const validateImportData = (rawRows: any[]) => {
             value: valNum,
             source: String(source).trim(),
             date: dateStr,
-            rating: ratingStr || null
+            rating: ratingStr || null,
         });
     });
 
@@ -402,9 +435,13 @@ const uploadLeads = async () => {
     if (!validLeads.value || validLeads.value.length === 0) return;
 
     try {
-        const response = await axios.post('/leads/batch', { leads: validLeads.value });
+        const response = await axios.post('/leads/batch', {
+            leads: validLeads.value,
+        });
         if (response.data.success) {
-            toast.success(`Imported ${response.data.created} leads. Skipped ${response.data.skipped} duplicates.`);
+            toast.success(
+                `Imported ${response.data.created} leads. Skipped ${response.data.skipped} duplicates.`,
+            );
             isImportModalOpen.value = false;
             router.reload({ only: ['leads'] });
         }
@@ -467,7 +504,9 @@ const getStatusClass = (status: string) => {
 
     <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-6">
         <!-- Header Section -->
-        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div
+            class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
+        >
             <div>
                 <h1 class="text-3xl font-semibold tracking-tight">Leads</h1>
                 <p class="text-muted-foreground">
@@ -499,112 +538,201 @@ const getStatusClass = (status: string) => {
             <div class="flex items-center gap-3">
                 <!-- Status Filter -->
                 <Select v-model="statusFilter">
-                    <SelectTrigger class="h-10 w-36 text-xs bg-card">
+                    <SelectTrigger class="h-10 w-36 bg-card text-xs">
                         <SelectValue placeholder="Stage" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all" class="text-xs">All Stages</SelectItem>
+                        <SelectItem value="all" class="text-xs"
+                            >All Stages</SelectItem
+                        >
                         <SelectItem value="New" class="text-xs">New</SelectItem>
-                        <SelectItem value="Contacted" class="text-xs">Contacted</SelectItem>
-                        <SelectItem value="Qualified" class="text-xs">Qualified</SelectItem>
-                        <SelectItem value="Proposal Sent" class="text-xs">Proposal Sent</SelectItem>
+                        <SelectItem value="Contacted" class="text-xs"
+                            >Contacted</SelectItem
+                        >
+                        <SelectItem value="Qualified" class="text-xs"
+                            >Qualified</SelectItem
+                        >
+                        <SelectItem value="Proposal Sent" class="text-xs"
+                            >Proposal Sent</SelectItem
+                        >
                         <SelectItem value="Won" class="text-xs">Won</SelectItem>
-                        <SelectItem value="Lost" class="text-xs">Lost</SelectItem>
+                        <SelectItem value="Lost" class="text-xs"
+                            >Lost</SelectItem
+                        >
                     </SelectContent>
                 </Select>
 
                 <!-- Date Filter -->
                 <Select v-model="dateFilter">
-                    <SelectTrigger class="h-10 w-36 text-xs bg-card">
+                    <SelectTrigger class="h-10 w-36 bg-card text-xs">
                         <SelectValue placeholder="Date Created" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all" class="text-xs">All Time</SelectItem>
-                        <SelectItem value="today" class="text-xs">Today</SelectItem>
-                        <SelectItem value="week" class="text-xs">This Week</SelectItem>
-                        <SelectItem value="month" class="text-xs">This Month</SelectItem>
-                        <SelectItem value="year" class="text-xs">This Year</SelectItem>
+                        <SelectItem value="all" class="text-xs"
+                            >All Time</SelectItem
+                        >
+                        <SelectItem value="today" class="text-xs"
+                            >Today</SelectItem
+                        >
+                        <SelectItem value="week" class="text-xs"
+                            >This Week</SelectItem
+                        >
+                        <SelectItem value="month" class="text-xs"
+                            >This Month</SelectItem
+                        >
+                        <SelectItem value="year" class="text-xs"
+                            >This Year</SelectItem
+                        >
                     </SelectContent>
                 </Select>
             </div>
         </div>
 
         <!-- Table Card -->
-        <Card class="overflow-hidden border-sidebar-border/70 shadow-sm dark:border-sidebar-border">
+        <Card
+            class="overflow-hidden border-sidebar-border/70 shadow-sm dark:border-sidebar-border"
+        >
             <div class="px-6">
                 <Table>
                     <TableHeader>
                         <TableRow class="hover:bg-transparent">
-                            <TableHead class="font-semibold">Contact Name</TableHead>
+                            <TableHead class="font-semibold"
+                                >Contact Name</TableHead
+                            >
                             <TableHead class="font-semibold">Company</TableHead>
                             <TableHead class="font-semibold">Email</TableHead>
                             <TableHead class="font-semibold">Phone</TableHead>
-                            <TableHead class="font-semibold">Lead Source</TableHead>
+                            <TableHead class="font-semibold"
+                                >Lead Source</TableHead
+                            >
                             <TableHead class="font-semibold">Value</TableHead>
                             <TableHead class="font-semibold">Status</TableHead>
-                            <TableHead class="font-semibold">Created Date</TableHead>
-                            <TableHead v-if="isAdmin" class="font-semibold">Assignee</TableHead>
-                            <TableHead v-if="isAdmin" class="text-right font-semibold">Actions</TableHead>
+                            <TableHead class="font-semibold"
+                                >Created Date</TableHead
+                            >
+                            <TableHead v-if="isAdmin" class="font-semibold"
+                                >Assignee</TableHead
+                            >
+                            <TableHead
+                                v-if="isAdmin"
+                                class="text-right font-semibold"
+                                >Actions</TableHead
+                            >
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         <TableRow
                             v-for="lead in filteredLeads"
                             :key="lead.id"
-                            class="transition-colors hover:bg-muted/50 border-b border-border/40"
+                            class="border-b border-border/40 transition-colors hover:bg-muted/50"
                         >
-                            <TableCell class="font-medium text-foreground py-3.5">
+                            <TableCell
+                                class="py-3.5 font-medium text-foreground"
+                            >
                                 <div class="flex items-center gap-2">
-                                    <span class="text-sm font-semibold tracking-tight">{{ lead.name }}</span>
+                                    <span
+                                        class="text-sm font-semibold tracking-tight"
+                                        >{{ lead.name }}</span
+                                    >
                                     <Badge
                                         v-if="lead.rating"
-                                        :class="lead.rating === 'warm' 
-                                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-transparent text-[10px] font-medium px-2 py-0.5' 
-                                            : 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-400 border-transparent text-[10px] font-medium px-2 py-0.5'"
+                                        :class="
+                                            lead.rating === 'warm'
+                                                ? 'border-transparent bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
+                                                : 'border-transparent bg-sky-100 px-2 py-0.5 text-[10px] font-medium text-sky-800 dark:bg-sky-900/30 dark:text-sky-400'
+                                        "
                                     >
                                         {{ lead.rating }}
                                     </Badge>
                                 </div>
                             </TableCell>
-                            <TableCell class="text-muted-foreground text-sm py-3.5">{{ lead.company }}</TableCell>
+                            <TableCell
+                                class="py-3.5 text-sm text-muted-foreground"
+                                >{{ lead.company }}</TableCell
+                            >
                             <TableCell class="py-3.5">
-                                <span v-if="lead.email" class="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Mail class="size-4 text-muted-foreground/60" />
+                                <span
+                                    v-if="lead.email"
+                                    class="flex items-center gap-2 text-sm text-muted-foreground"
+                                >
+                                    <Mail
+                                        class="size-4 text-muted-foreground/60"
+                                    />
                                     {{ lead.email }}
                                 </span>
-                                <span v-else class="text-muted-foreground/40 text-xs">—</span>
+                                <span
+                                    v-else
+                                    class="text-xs text-muted-foreground/40"
+                                    >—</span
+                                >
                             </TableCell>
                             <TableCell class="py-3.5">
-                                <span v-if="lead.phone" class="text-sm text-muted-foreground font-mono">{{ lead.phone }}</span>
-                                <span v-else class="text-muted-foreground/40 text-xs">—</span>
+                                <span
+                                    v-if="lead.phone"
+                                    class="font-mono text-sm text-muted-foreground"
+                                    >{{ lead.phone }}</span
+                                >
+                                <span
+                                    v-else
+                                    class="text-xs text-muted-foreground/40"
+                                    >—</span
+                                >
                             </TableCell>
-                            <TableCell class="text-muted-foreground text-sm py-3.5">{{ lead.source }}</TableCell>
-                            <TableCell class="font-semibold text-sm py-3.5 text-foreground">{{ formatCurrency(lead.value) }}</TableCell>
+                            <TableCell
+                                class="py-3.5 text-sm text-muted-foreground"
+                                >{{ lead.source }}</TableCell
+                            >
+                            <TableCell
+                                class="py-3.5 text-sm font-semibold text-foreground"
+                                >{{ formatCurrency(lead.value) }}</TableCell
+                            >
                             <TableCell class="py-3.5">
                                 <Badge
                                     :variant="getStatusVariant(lead.status)"
-                                    :class="[getStatusClass(lead.status), 'text-xs font-semibold px-2.5 py-1']"
+                                    :class="[
+                                        getStatusClass(lead.status),
+                                        'px-2.5 py-1 text-xs font-semibold',
+                                    ]"
                                 >
                                     {{ lead.status }}
                                 </Badge>
                             </TableCell>
-                            <TableCell class="text-muted-foreground text-sm py-3.5">{{ lead.date }}</TableCell>
+                            <TableCell
+                                class="py-3.5 text-sm text-muted-foreground"
+                                >{{ lead.date }}</TableCell
+                            >
                             <TableCell v-if="isAdmin" class="py-3.5">
-                                <div v-if="lead.assignee" class="flex items-center gap-2">
-                                    <Avatar class="size-7 border border-border/80">
-                                        <AvatarFallback class="bg-primary/10 text-primary text-[10px] font-bold">
-                                            {{ getInitials(lead.assignee.name) }}
+                                <div
+                                    v-if="lead.assignee"
+                                    class="flex items-center gap-2"
+                                >
+                                    <Avatar
+                                        class="size-7 border border-border/80"
+                                    >
+                                        <AvatarFallback
+                                            class="bg-primary/10 text-[10px] font-bold text-primary"
+                                        >
+                                            {{
+                                                getInitials(lead.assignee.name)
+                                            }}
                                         </AvatarFallback>
                                     </Avatar>
-                                    <span class="text-sm font-semibold text-foreground/90">{{ lead.assignee.name }}</span>
+                                    <span
+                                        class="text-sm font-semibold text-foreground/90"
+                                        >{{ lead.assignee.name }}</span
+                                    >
                                 </div>
-                                <span v-else class="text-muted-foreground/40 text-xs">—</span>
+                                <span
+                                    v-else
+                                    class="text-xs text-muted-foreground/40"
+                                    >—</span
+                                >
                             </TableCell>
-                            <TableCell v-if="isAdmin" class="text-right py-3.5">
+                            <TableCell v-if="isAdmin" class="py-3.5 text-right">
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    class="size-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                                    class="size-8 rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                                     @click="deleteLead(lead.id)"
                                 >
                                     <Trash2 class="size-4" />
@@ -693,9 +821,15 @@ const getStatusClass = (status: string) => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="New">New</SelectItem>
-                                    <SelectItem value="Contacted">Contacted</SelectItem>
-                                    <SelectItem value="Qualified">Qualified</SelectItem>
-                                    <SelectItem value="Proposal Sent">Proposal Sent</SelectItem>
+                                    <SelectItem value="Contacted"
+                                        >Contacted</SelectItem
+                                    >
+                                    <SelectItem value="Qualified"
+                                        >Qualified</SelectItem
+                                    >
+                                    <SelectItem value="Proposal Sent"
+                                        >Proposal Sent</SelectItem
+                                    >
                                     <SelectItem value="Won">Won</SelectItem>
                                     <SelectItem value="Lost">Lost</SelectItem>
                                 </SelectContent>
@@ -727,25 +861,30 @@ const getStatusClass = (status: string) => {
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button type="submit" @click="createLead">Create Lead</Button>
+                    <Button type="submit" @click="createLead"
+                        >Create Lead</Button
+                    >
                 </DialogFooter>
             </DialogContent>
         </Dialog>
 
         <!-- Import Modal -->
         <Dialog v-model:open="isImportModalOpen">
-            <DialogContent class="sm:max-w-xl max-h-[85vh] flex flex-col p-6">
+            <DialogContent class="flex max-h-[85vh] flex-col p-6 sm:max-w-xl">
                 <DialogHeader class="shrink-0">
                     <DialogTitle>Import Leads</DialogTitle>
                     <DialogDescription>
-                        Upload a `.csv` or `.xlsx` file. We will validate rows automatically before saving.
+                        Upload a `.csv` or `.xlsx` file. We will validate rows
+                        automatically before saving.
                     </DialogDescription>
                 </DialogHeader>
 
-                <div class="space-y-4 flex-1 overflow-y-auto pr-1 py-4">
+                <div class="flex-1 space-y-4 overflow-y-auto py-4 pr-1">
                     <!-- File Input -->
                     <div class="flex flex-col gap-2">
-                        <Label for="file-upload">Choose CSV or Excel File</Label>
+                        <Label for="file-upload"
+                            >Choose CSV or Excel File</Label
+                        >
                         <Input
                             id="file-upload"
                             type="file"
@@ -756,38 +895,80 @@ const getStatusClass = (status: string) => {
                     </div>
 
                     <!-- Validation Summary -->
-                    <div v-if="validLeads !== undefined || invalidLeads.length > 0" class="space-y-4">
+                    <div
+                        v-if="
+                            validLeads !== undefined || invalidLeads.length > 0
+                        "
+                        class="space-y-4"
+                    >
                         <div class="flex items-center gap-4">
-                            <span class="inline-flex items-center gap-1.5 rounded-md bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
-                                {{ validLeads ? validLeads.length : 0 }} Valid Rows
+                            <span
+                                class="inline-flex items-center gap-1.5 rounded-md bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
+                            >
+                                {{ validLeads ? validLeads.length : 0 }} Valid
+                                Rows
                             </span>
-                            <span class="inline-flex items-center gap-1.5 rounded-md bg-rose-100 px-2.5 py-1 text-xs font-semibold text-rose-800 dark:bg-rose-900/30 dark:text-rose-400">
+                            <span
+                                class="inline-flex items-center gap-1.5 rounded-md bg-rose-100 px-2.5 py-1 text-xs font-semibold text-rose-800 dark:bg-rose-900/30 dark:text-rose-400"
+                            >
                                 {{ invalidLeads.length }} Invalid Rows
                             </span>
                         </div>
 
                         <!-- Invalid Row Errors -->
-                        <div v-if="invalidLeads.length > 0" class="rounded-lg border border-destructive/20 bg-destructive/5 p-3 space-y-2">
-                            <h4 class="text-xs font-bold text-destructive">Errors Found:</h4>
-                            <div class="max-h-36 overflow-y-auto text-xs space-y-1.5 text-muted-foreground custom-scrollbar">
+                        <div
+                            v-if="invalidLeads.length > 0"
+                            class="space-y-2 rounded-lg border border-destructive/20 bg-destructive/5 p-3"
+                        >
+                            <h4 class="text-xs font-bold text-destructive">
+                                Errors Found:
+                            </h4>
+                            <div
+                                class="custom-scrollbar max-h-36 space-y-1.5 overflow-y-auto text-xs text-muted-foreground"
+                            >
                                 <div v-for="err in invalidLeads" :key="err.row">
-                                    <span class="font-semibold text-destructive">Row {{ err.row }}:</span> {{ err.error }}
+                                    <span class="font-semibold text-destructive"
+                                        >Row {{ err.row }}:</span
+                                    >
+                                    {{ err.error }}
                                 </div>
                             </div>
                         </div>
 
                         <!-- Preview Valid Rows -->
-                        <div v-if="validLeads && validLeads.length > 0" class="border border-sidebar-border/70 rounded-lg p-3 space-y-2">
-                            <h4 class="text-xs font-bold text-foreground">Valid Leads Preview:</h4>
-                            <div class="max-h-36 overflow-y-auto text-xs space-y-1.5 custom-scrollbar">
-                                <div v-for="(lead, idx) in validLeads.slice(0, 5)" :key="idx" class="flex justify-between border-b border-border/40 pb-1">
+                        <div
+                            v-if="validLeads && validLeads.length > 0"
+                            class="space-y-2 rounded-lg border border-sidebar-border/70 p-3"
+                        >
+                            <h4 class="text-xs font-bold text-foreground">
+                                Valid Leads Preview:
+                            </h4>
+                            <div
+                                class="custom-scrollbar max-h-36 space-y-1.5 overflow-y-auto text-xs"
+                            >
+                                <div
+                                    v-for="(lead, idx) in validLeads.slice(
+                                        0,
+                                        5,
+                                    )"
+                                    :key="idx"
+                                    class="flex justify-between border-b border-border/40 pb-1"
+                                >
                                     <span class="font-medium text-foreground">
-                                        {{ lead.name }} 
-                                        <span class="text-muted-foreground text-[10px]">({{ lead.company }})</span>
+                                        {{ lead.name }}
+                                        <span
+                                            class="text-[10px] text-muted-foreground"
+                                            >({{ lead.company }})</span
+                                        >
                                     </span>
-                                    <span class="text-muted-foreground">{{ lead.email || 'No email' }}</span>
+                                    <span class="text-muted-foreground">{{
+                                        lead.email || 'No email'
+                                    }}</span>
                                 </div>
-                                <div v-if="validLeads.length > 5" class="text-center text-[10px] text-muted-foreground font-semibold pt-1">
+                                <div
+                                    v-if="validLeads.length > 5"
+                                    class="pt-1 text-center text-[10px] font-semibold text-muted-foreground"
+                                >
                                     + {{ validLeads.length - 5 }} more leads
                                 </div>
                             </div>
@@ -795,9 +976,14 @@ const getStatusClass = (status: string) => {
                     </div>
                 </div>
 
-                <DialogFooter class="shrink-0 pt-4 border-t">
-                    <Button variant="outline" @click="isImportModalOpen = false">Cancel</Button>
-                    <Button :disabled="!validLeads || validLeads.length === 0" @click="uploadLeads">
+                <DialogFooter class="shrink-0 border-t pt-4">
+                    <Button variant="outline" @click="isImportModalOpen = false"
+                        >Cancel</Button
+                    >
+                    <Button
+                        :disabled="!validLeads || validLeads.length === 0"
+                        @click="uploadLeads"
+                    >
                         Upload to Database
                     </Button>
                 </DialogFooter>

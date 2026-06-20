@@ -215,12 +215,18 @@ const integrationsList = ref<Integration[]>([
 
 onMounted(() => {
     const origin = window.location.origin;
-    integrationsList.value = integrationsList.value.map(item => {
+    integrationsList.value = integrationsList.value.map((item) => {
         if (item.webhookUrl) {
-            item.webhookUrl = item.webhookUrl.replace('https://api.crm-kanban.test', origin);
+            item.webhookUrl = item.webhookUrl.replace(
+                'https://api.crm-kanban.test',
+                origin,
+            );
         }
         if (item.scriptCode) {
-            item.scriptCode = item.scriptCode.replace('https://api.crm-kanban.test', origin);
+            item.scriptCode = item.scriptCode.replace(
+                'https://api.crm-kanban.test',
+                origin,
+            );
         }
         return item;
     });
@@ -269,7 +275,8 @@ const copyText = (text: string, fieldKey: string) => {
     };
 
     if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text)
+        navigator.clipboard
+            .writeText(text)
             .then(handleSuccess)
             .catch(() => {
                 fallbackCopy(text, handleSuccess);

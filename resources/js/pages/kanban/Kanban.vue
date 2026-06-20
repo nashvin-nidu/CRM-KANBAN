@@ -82,8 +82,6 @@ interface Column {
     borderClass: string;
 }
 
-
-
 const searchQuery = ref('');
 const isSearchExpanded = ref(false);
 const searchInputRef = ref<any>(null);
@@ -489,7 +487,9 @@ const deleteLead = async (id: number) => {
                         <SelectValue placeholder="All Executives" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all" class="text-xs">All Executives</SelectItem>
+                        <SelectItem value="all" class="text-xs"
+                            >All Executives</SelectItem
+                        >
                         <SelectItem
                             v-for="user in availableAssignees"
                             :key="user.id"
