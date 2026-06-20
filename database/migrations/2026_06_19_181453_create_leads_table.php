@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('source')->nullable();
             $table->date('date');
             $table->string('rating')->nullable();
+            $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

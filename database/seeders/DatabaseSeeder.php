@@ -21,7 +21,39 @@ class DatabaseSeeder extends Seeder
             'name' => 'Admin',
             'email' => 'admin@gmail.com',
             'password' => \Illuminate\Support\Facades\Hash::make('admin'),
+            'role' => 'admin',
         ]);
+
+        $salesReps = [
+            [
+                'name' => 'Sarah Jenkins',
+                'email' => 'executive1@gmail.com',
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'role' => 'sales_rep',
+            ],
+            [
+                'name' => 'Alex Rivera',
+                'email' => 'executive2@gmail.com',
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'role' => 'sales_rep',
+            ],
+            [
+                'name' => 'Elena Rostova',
+                'email' => 'executive3@gmail.com',
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'role' => 'sales_rep',
+            ],
+            [
+                'name' => 'Marcus Chen',
+                'email' => 'executive4@gmail.com',
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'role' => 'sales_rep',
+            ],
+        ];
+
+        foreach ($salesReps as $rep) {
+            User::factory()->create($rep);
+        }
 
         $this->call(LeadSeeder::class);
     }

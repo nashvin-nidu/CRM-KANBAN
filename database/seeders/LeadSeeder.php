@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Lead;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class LeadSeeder extends Seeder
@@ -235,7 +236,13 @@ class LeadSeeder extends Seeder
             ],
         ];
 
+        $salesReps = User::where('role', 'sales_rep')->orderBy('id', 'asc')->get();
+
         foreach ($leads as $lead) {
+            if ($salesReps->count() > 0) {
+                $repIndex = $lead['id'] % 4;
+                $lead['assigned_to'] = $salesReps[$repIndex]->id;
+            }
             Lead::updateOrCreate(['id' => $lead['id']], $lead);
         }
     }
