@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
-import { Search, Plus, Mail, Upload, Briefcase } from '@lucide/vue';
-import { ref, computed } from 'vue';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { Search, Plus, Mail, Upload, Briefcase, Trash2 } from '@lucide/vue';
+import { ref, computed, watch } from 'vue';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { toast } from 'vue-sonner';
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
     Table,
     TableBody,
