@@ -376,8 +376,8 @@ const getUserBg = (userId: number) => {
 
 // Map of name -> title
 const roleTitles: Record<string, string> = {
-    'Sarah Jenkins': 'Enterprise Account Executive',
-    'Alex Rivera': 'Senior Mid-Market AE',
+    'Nashivn Nidu': 'Enterprise Account Executive',
+    'Rajab': 'Senior Mid-Market AE',
     'Elena Rostova': 'Inbound Specialist',
     'Marcus Chen': 'Outbound Specialist',
 };
